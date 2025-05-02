@@ -1,0 +1,32 @@
+# --- 공통 --------------
+# macOS, Windows 임시 파일
+.DS_Store
+Thumbs.db
+
+# IDE / 에디터
+.idea/
+.vscode/
+*.iml
+*.log
+
+# 환경변수 파일
+*.env
+
+# --- Spring Boot (Java) --------------
+streaming-server/target/
+streaming-server/.mvn/
+streaming-server/*.jar
+streaming-server/*.class
+# Spring Boot 환경설정 파일 무시
+streaming-server/src/main/resources/application*.yml
+
+# --- Vue.js (Node) --------------
+streaming-front/node_modules/
+streaming-front/dist/
+streaming-front/yarn-error.log
+
+# --- Flask (Python) --------------
+streaming-transcoder/__pycache__/
+streaming-transcoder/*.py[cod]
+streaming-transcoder/venv/
+streaming-transcoder/env/
