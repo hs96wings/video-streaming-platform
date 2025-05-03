@@ -5,6 +5,7 @@ import io.github.hs96wings.streaming_server.common.auth.JwtTokenProvider;
 import io.github.hs96wings.streaming_server.common.configs.SecurityConfigs;
 import io.github.hs96wings.streaming_server.member.controller.MemberController;
 import io.github.hs96wings.streaming_server.member.domain.Member;
+import io.github.hs96wings.streaming_server.member.dto.MemberLoginReqDto;
 import io.github.hs96wings.streaming_server.member.dto.MemberSaveReqDto;
 import io.github.hs96wings.streaming_server.member.service.MemberService;
 import org.junit.jupiter.api.DisplayName;
@@ -21,8 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @WebMvcTest(MemberController.class)
@@ -81,5 +81,27 @@ public class MemberControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(containsString("이미 존재하는 아이디입니다.")));
 
+    }
+
+    @Test
+    @DisplayName("로그인 성공 시 id와 토큰이 응답에 들어간다")
+    void testLoginMember() throws Exception {
+        // given
+        MemberLoginReqDto memberLoginReqDto = new MemberLoginReqDto("testUser", "1234");
+        Member savedMember = Member.builder()
+                .id(1L)
+                .userid("testUser")
+                .password("1234")
+                .build();
+
+        when(memberService.login(any(MemberLoginReqDto.class))).thenReturn(savedMember);
+        when(jwtTokenProvider.createToken("testUser", "USER")).thenReturn("dummy-jwt-token");
+
+        mockMvc.perform(post("/member/doLogin")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(new ObjectMapper().writeValueAsString(memberLoginReqDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.token").value("dummy-jwt-token"));
     }
 }
