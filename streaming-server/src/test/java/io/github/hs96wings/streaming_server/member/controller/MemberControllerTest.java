@@ -1,6 +1,8 @@
 package io.github.hs96wings.streaming_server.member.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.hs96wings.streaming_server.common.auth.JwtTokenProvider;
+import io.github.hs96wings.streaming_server.common.configs.SecurityConfigs;
 import io.github.hs96wings.streaming_server.member.controller.MemberController;
 import io.github.hs96wings.streaming_server.member.domain.Member;
 import io.github.hs96wings.streaming_server.member.dto.MemberSaveReqDto;
@@ -11,6 +13,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -23,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @WebMvcTest(MemberController.class)
+@Import(SecurityConfigs.class) // permitAll 규칙을 가져옴
 @AutoConfigureMockMvc
 public class MemberControllerTest {
     @Autowired
@@ -30,6 +34,9 @@ public class MemberControllerTest {
 
     @MockitoBean
     private MemberService memberService;
+
+    @MockitoBean
+    private JwtTokenProvider jwtTokenProvider; // 실제 필터는 무시
 
     @Autowired
     private ObjectMapper objectMapper;
