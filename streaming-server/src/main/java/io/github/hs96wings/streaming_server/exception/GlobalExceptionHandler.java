@@ -1,4 +1,4 @@
-package io.github.hs96wings.streaming_server.member.exception;
+package io.github.hs96wings.streaming_server.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

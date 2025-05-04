@@ -34,7 +34,7 @@ public class MemberService {
     }
 
     public Member login(MemberLoginReqDto memberLoginReqDto) {
-        Member member = memberRepository.findByUserid(memberLoginReqDto.getUserid()).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 이메일입니다"));
+        Member member = memberRepository.findByUserid(memberLoginReqDto.getUserid()).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 아이디입니다"));
 
         if (!passwordEncoder.matches(memberLoginReqDto.getPassword(), member.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
