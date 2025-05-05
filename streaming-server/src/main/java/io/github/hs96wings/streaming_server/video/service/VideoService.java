@@ -1,6 +1,7 @@
 package io.github.hs96wings.streaming_server.video.service;
 
 import io.github.hs96wings.streaming_server.video.domain.Video;
+import io.github.hs96wings.streaming_server.video.dto.VideoResDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoSaveReqDto;
 import io.github.hs96wings.streaming_server.video.repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +14,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -46,5 +49,23 @@ public class VideoService {
         } catch (IOException e) {
             throw new RuntimeException("영상 업로드 실패", e);
         }
+    }
+
+    public List<VideoResDto> getVideos() {
+        List<Video> videoList = videoRepository.findAll();
+        List<VideoResDto> dtos = new ArrayList<>();
+        for (Video v : videoList) {
+            VideoResDto dto = new VideoResDto();
+            dto.setId(v.getId());
+            dto.setTitle(v.getTitle());
+            dto.setDescription(v.getDescription());
+            dto.setVideoPath(v.getVideoPath());
+            dto.setThumbnailPath(v.getThumbnailPath());
+            dto.setUploadedAt(v.getUploadedAt());
+            dto.setVideoStatus(v.getVideoStatus());
+            dtos.add(dto);
+        }
+
+        return dtos;
     }
 }

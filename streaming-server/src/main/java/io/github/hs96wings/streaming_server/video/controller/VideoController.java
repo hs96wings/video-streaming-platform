@@ -1,14 +1,14 @@
 package io.github.hs96wings.streaming_server.video.controller;
 
 import io.github.hs96wings.streaming_server.video.domain.Video;
+import io.github.hs96wings.streaming_server.video.dto.VideoResDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoSaveReqDto;
 import io.github.hs96wings.streaming_server.video.service.VideoService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/video")
@@ -24,5 +24,12 @@ public class VideoController {
         Video savedVideo = videoService.upload(videoSaveReqDto);
 
         return new ResponseEntity<>(savedVideo.getId(), HttpStatus.CREATED);
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<?> videoList() {
+        List<VideoResDto> videoResDtos = videoService.getVideos();
+
+        return new ResponseEntity<>(videoResDtos, HttpStatus.OK);
     }
 }
