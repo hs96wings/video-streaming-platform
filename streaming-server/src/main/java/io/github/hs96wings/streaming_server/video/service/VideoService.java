@@ -1,6 +1,7 @@
 package io.github.hs96wings.streaming_server.video.service;
 
 import io.github.hs96wings.streaming_server.video.domain.Video;
+import io.github.hs96wings.streaming_server.video.dto.VideoModifyReqDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoResDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoSaveReqDto;
 import io.github.hs96wings.streaming_server.video.repository.VideoRepository;
@@ -79,7 +80,18 @@ public class VideoService {
 
     public VideoResDto findById(Long id) {
         Video video =  videoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("해당 영상이 존재하지 않습니다"));
+                .orElseThrow(() -> new IllegalArgumentException("해당 영상이 존재하지 않습니다"));
         return new VideoResDto(video);
+    }
+
+    @Transactional
+    public Video modify(Long id, VideoModifyReqDto videoModifyReqDto) {
+        Video modifyVideo = videoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 영상이 존재하지 않습니다"));
+
+        modifyVideo.setTitle(videoModifyReqDto.getTitle());
+        modifyVideo.setDescription(videoModifyReqDto.getDescription());
+
+        return modifyVideo;
     }
 }

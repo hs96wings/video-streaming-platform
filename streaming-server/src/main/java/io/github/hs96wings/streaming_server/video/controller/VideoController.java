@@ -1,6 +1,7 @@
 package io.github.hs96wings.streaming_server.video.controller;
 
 import io.github.hs96wings.streaming_server.video.domain.Video;
+import io.github.hs96wings.streaming_server.video.dto.VideoModifyReqDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoResDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoSaveReqDto;
 import io.github.hs96wings.streaming_server.video.service.VideoService;
@@ -37,5 +38,12 @@ public class VideoController {
     public ResponseEntity<?> getVideo(@PathVariable("id") Long id) {
         VideoResDto video = videoService.findById(id);
         return new ResponseEntity<>(video, HttpStatus.OK);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> modifyVideo(@PathVariable("id") Long id, @RequestBody VideoModifyReqDto videoModifyReqDto) {
+        Video modifyVideo = videoService.modify(id, videoModifyReqDto);
+
+        return new ResponseEntity<>(modifyVideo.getId(), HttpStatus.OK);
     }
 }
