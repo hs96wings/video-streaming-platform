@@ -19,11 +19,14 @@ streaming-server/*.jar
 streaming-server/*.class
 # Spring Boot 환경설정 파일 무시
 streaming-server/src/main/resources/application*.yml
+# 영상 업로드 폴더 제외
+streaming-server/uploads/
 
 # --- Vue.js (Node) --------------
 streaming-front/node_modules/
 streaming-front/dist/
 streaming-front/yarn-error.log
+
 
 # --- Flask (Python) --------------
 streaming-transcoder/__pycache__/
