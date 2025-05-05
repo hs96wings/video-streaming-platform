@@ -6,6 +6,7 @@ import io.github.hs96wings.streaming_server.video.dto.VideoResDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoSaveReqDto;
 import io.github.hs96wings.streaming_server.video.repository.VideoRepository;
 import io.github.hs96wings.streaming_server.video.service.VideoService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -94,5 +96,29 @@ public class VideoServiceIntegrationTest {
                         tuple(v1.getId(), "첫 번째 영상"),
                         tuple(v2.getId(), "두 번째 영상")
                 );
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("DB에서 영상 하나를 저장하고 조회한다")
+    void uploadAndFindVideo_persistsAndRetrievesVideo() {
+        // given: @BeforeEach에 있습니다
+
+        // when: 업로드 후 바로 반환된 엔티티
+        Video uploaded = videoService.upload(videoSaveReqDto);
+
+        // then: Repository 에서 제대로 조회되는지 검증
+        Video found = videoRepository.findById(uploaded.getId())
+                .orElseThrow(() -> new AssertionError("조회된 영상이 없습니다."));
+
+        assertAll("Video Entity 검증",
+                () -> assertThat(found.getId()).isEqualTo(uploaded.getId()),
+                () -> assertThat(found.getTitle()).isEqualTo(uploaded.getTitle()),
+                () -> assertThat(found.getDescription()).isEqualTo(uploaded.getDescription()),
+                () -> assertThat(found.getVideoPath()).isEqualTo(uploaded.getVideoPath()),
+                () -> assertThat(found.getThumbnailPath()).isEqualTo(uploaded.getThumbnailPath()),
+                () -> assertThat(found.getUploadedAt()).isEqualTo(uploaded.getUploadedAt()),
+                () -> assertThat(found.getVideoStatus()).isEqualTo(uploaded.getVideoStatus())
+        );
     }
 }
