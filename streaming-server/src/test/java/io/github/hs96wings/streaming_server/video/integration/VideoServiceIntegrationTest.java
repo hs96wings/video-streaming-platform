@@ -2,6 +2,7 @@ package io.github.hs96wings.streaming_server.video.integration;
 
 import io.github.hs96wings.streaming_server.member.integration.MemberServiceIntegrationTest;
 import io.github.hs96wings.streaming_server.video.domain.Video;
+import io.github.hs96wings.streaming_server.video.dto.VideoModifyReqDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoResDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoSaveReqDto;
 import io.github.hs96wings.streaming_server.video.repository.VideoRepository;
@@ -115,6 +116,33 @@ public class VideoServiceIntegrationTest {
                 () -> assertThat(found.getId()).isEqualTo(uploaded.getId()),
                 () -> assertThat(found.getTitle()).isEqualTo(uploaded.getTitle()),
                 () -> assertThat(found.getDescription()).isEqualTo(uploaded.getDescription()),
+                () -> assertThat(found.getVideoPath()).isEqualTo(uploaded.getVideoPath()),
+                () -> assertThat(found.getThumbnailPath()).isEqualTo(uploaded.getThumbnailPath()),
+                () -> assertThat(found.getUploadedAt()).isEqualTo(uploaded.getUploadedAt()),
+                () -> assertThat(found.getVideoStatus()).isEqualTo(uploaded.getVideoStatus())
+        );
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("DB에서 영상 하나를 저장하고 수정한다")
+    void uploadAndModifyVideo_persistsAndRetrievesVideo() {
+        // given
+        Video uploaded = videoService.upload(videoSaveReqDto);
+        VideoModifyReqDto videoModifyReqDto = new VideoModifyReqDto("수정된 제목", "수정된 설명");
+
+        // when
+        videoService.modify(uploaded.getId(), videoModifyReqDto);
+
+        // then
+        Video found = videoRepository.findById(uploaded.getId())
+                .orElseThrow(() -> new AssertionError("조회된 영상이 없습니다."));
+
+        assertAll("Video Entity 검증",
+                () -> assertThat(found.getTitle()).isEqualTo("수정된 제목"),
+                () -> assertThat(found.getDescription()).isEqualTo("수정된 설명"),
+                // 변경되지 않아야 될 필드들
+                () -> assertThat(found.getId()).isEqualTo(uploaded.getId()),
                 () -> assertThat(found.getVideoPath()).isEqualTo(uploaded.getVideoPath()),
                 () -> assertThat(found.getThumbnailPath()).isEqualTo(uploaded.getThumbnailPath()),
                 () -> assertThat(found.getUploadedAt()).isEqualTo(uploaded.getUploadedAt()),
