@@ -25,4 +25,8 @@ public class Video {
     @Column(name = "uploaded_at", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime uploadedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private VideoStatus videoStatus = VideoStatus.UPLOADED;
 }
