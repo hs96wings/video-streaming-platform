@@ -1,29 +1,32 @@
 package io.github.hs96wings.streaming_server.video.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.hs96wings.streaming_server.member.integration.MemberServiceIntegrationTest;
 import io.github.hs96wings.streaming_server.video.domain.Video;
 import io.github.hs96wings.streaming_server.video.domain.VideoStatus;
 import io.github.hs96wings.streaming_server.video.dto.VideoResDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoSaveReqDto;
 import io.github.hs96wings.streaming_server.video.service.VideoService;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.when;
+import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(VideoController.class)
@@ -35,6 +38,8 @@ public class VideoControllerTest {
     private VideoService videoService;
 
     private VideoSaveReqDto videoSaveReqDto;
+    private static final Logger log = LoggerFactory.getLogger(MemberServiceIntegrationTest.class);
+
     @BeforeEach
     void setUp() {
         videoSaveReqDto = new VideoSaveReqDto("테스트 제목", "테스트 설명",
@@ -56,7 +61,7 @@ public class VideoControllerTest {
         when(videoService.upload(any(VideoSaveReqDto.class))).thenReturn(savedVideo);
 
         // when & then: 최종적으로 1이라는 ID가 body로 나오는지 확인
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/api/video/upload")
+        mockMvc.perform(multipart("/api/video/upload")
                         .file((MockMultipartFile) videoSaveReqDto.getFile())
                         .param("title", videoSaveReqDto.getTitle())
                         .param("description", videoSaveReqDto.getDescription()))
@@ -83,7 +88,7 @@ public class VideoControllerTest {
         when(videoService.getVideos()).thenReturn(videoResDtos);
 
         // when & then
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/video/list")
+        mockMvc.perform(get("/api/video/list")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 // 응답 JSON 배열 길이가 1인지
@@ -92,5 +97,41 @@ public class VideoControllerTest {
                 .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].title").value("테스트 영상"))
                 .andExpect(jsonPath("$[0].videoPath").value("/uploads/videos/test.mp4"));
+    }
+
+    @Test
+    @DisplayName("영상 하나 요청 시 200 전달")
+    void getVideo_returnsOkAndJson() throws Exception {
+        // given
+        Video savedVideo = Video.builder()
+                .id(1L)
+                .title(videoSaveReqDto.getTitle())
+                .description(videoSaveReqDto.getDescription())
+                .videoPath("/uploads/videos/test.mp4")
+                .build();
+        VideoResDto dto = new VideoResDto(savedVideo);
+
+        when(videoService.findById(anyLong())).thenReturn(dto);
+
+        // when & then
+        mockMvc.perform(get("/api/video/{0}", 1L)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.title").value("테스트 제목"))
+                .andExpect(jsonPath("$.videoPath").value("/uploads/videos/test.mp4"));
+    }
+
+    @Test
+    @DisplayName("없는 영상 요청 시 404 전달")
+    void getVideo_returnsNotFound() throws Exception {
+        // given: findById가 예외를 던지도록 설정
+        when(videoService.findById(anyLong())).thenThrow(new EntityNotFoundException("존재하지 않는 영상입니다."));
+
+        // when & then
+        mockMvc.perform(get("/api/video/1000")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(containsString("존재하지 않는 영상입니다.")));
     }
 }
