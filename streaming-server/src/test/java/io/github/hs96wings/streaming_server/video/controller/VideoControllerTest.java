@@ -1,8 +1,10 @@
 package io.github.hs96wings.streaming_server.video.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.hs96wings.streaming_server.member.integration.MemberServiceIntegrationTest;
 import io.github.hs96wings.streaming_server.video.domain.Video;
 import io.github.hs96wings.streaming_server.video.domain.VideoStatus;
+import io.github.hs96wings.streaming_server.video.dto.VideoModifyReqDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoResDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoSaveReqDto;
 import io.github.hs96wings.streaming_server.video.service.VideoService;
@@ -19,6 +21,8 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,6 +31,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(VideoController.class)
@@ -36,14 +41,18 @@ public class VideoControllerTest {
     private MockMvc mockMvc;
     @MockitoBean
     private VideoService videoService;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     private VideoSaveReqDto videoSaveReqDto;
+    private VideoModifyReqDto videoModifyReqDto;
     private static final Logger log = LoggerFactory.getLogger(MemberServiceIntegrationTest.class);
 
     @BeforeEach
     void setUp() {
         videoSaveReqDto = new VideoSaveReqDto("테스트 제목", "테스트 설명",
                 new MockMultipartFile("file", "test.mp4", MediaType.APPLICATION_OCTET_STREAM_VALUE, "dummy content".getBytes()));
+        videoModifyReqDto = new VideoModifyReqDto("수정된 제목", "수정된 설명");
     }
 
     @Test
@@ -133,5 +142,41 @@ public class VideoControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("존재하지 않는 영상입니다.")));
+    }
+
+    @Test
+    @DisplayName("영상 하나 수정 요청 시 200 전달")
+    void modifyVideo_returnsOkAndJson() throws Exception {
+        // given
+        Video video = Video.builder()
+                .id(1L)
+                .title(videoModifyReqDto.getTitle())
+                .description(videoModifyReqDto.getDescription())
+                .videoPath("/uploads/videos/test.mp4")
+                .build();
+
+        when(videoService.modify(anyLong(), any(VideoModifyReqDto.class))).thenReturn(video);
+
+        // when & then
+        mockMvc.perform(put("/api/video/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(videoModifyReqDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("수정된 제목"))
+                .andExpect(jsonPath("$.description").value("수정된 설명"));
+    }
+
+    @Test
+    @DisplayName("없는 영상 수정 요청 시 400 전달")
+    void modifyVideo_returnsBadRequest() throws Exception {
+        // given: modify가 예외를 던지도록 설정
+        when(videoService.modify(anyLong(), any(VideoModifyReqDto.class))).thenThrow(new IllegalArgumentException("해당 영상이 존재하지 않습니다"));
+
+        // when & then
+        mockMvc.perform(put("/api/video/1000")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(videoModifyReqDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("해당 영상이 존재하지 않습니다")));
     }
 }

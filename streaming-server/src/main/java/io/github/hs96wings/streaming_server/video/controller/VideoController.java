@@ -44,6 +44,6 @@ public class VideoController {
     public ResponseEntity<?> modifyVideo(@PathVariable("id") Long id, @RequestBody VideoModifyReqDto videoModifyReqDto) {
         Video modifyVideo = videoService.modify(id, videoModifyReqDto);
 
-        return new ResponseEntity<>(modifyVideo.getId(), HttpStatus.OK);
+        return ResponseEntity.ok(new VideoResDto(modifyVideo));
     }
 }
