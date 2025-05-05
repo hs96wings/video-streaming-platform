@@ -32,8 +32,7 @@ export default {
         }
     },
     async created() {
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/video/list`)
-        console.log(response)
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/video/list`);
         this.videoList = response.data;
     },
     methods: {

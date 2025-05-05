@@ -4,16 +4,18 @@ import io.github.hs96wings.streaming_server.video.domain.Video;
 import io.github.hs96wings.streaming_server.video.dto.VideoResDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoSaveReqDto;
 import io.github.hs96wings.streaming_server.video.repository.VideoRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -22,8 +24,9 @@ import java.util.UUID;
 @Transactional
 public class VideoService {
     private final VideoRepository videoRepository;
-    @Value("${app.upload.dir}")
+    @Value("${app.video.dir}")
     private String uploadDir;
+    private static final Logger log = LoggerFactory.getLogger(VideoService.class);
 
     public VideoService(VideoRepository videoRepository) {
         this.videoRepository = videoRepository;
@@ -33,7 +36,11 @@ public class VideoService {
         try {
             MultipartFile file = videoSaveReqDto.getFile();
             String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
             Path savePath = Paths.get(uploadDir, fileName);
+
+            log.debug(savePath.toString());
+            log.debug(savePath.toString());
 
             Files.createDirectories(savePath.getParent());
             file.transferTo(savePath);
@@ -41,7 +48,7 @@ public class VideoService {
             Video video = new Video();
             video.setTitle(videoSaveReqDto.getTitle());
             video.setDescription(video.getDescription());
-            video.setVideoPath(savePath.toString());
+            video.setVideoPath(baseUrl + uploadDir.replace(".", "") + fileName);
 
             videoRepository.save(video);
 
