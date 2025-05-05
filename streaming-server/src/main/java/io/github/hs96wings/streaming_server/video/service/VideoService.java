@@ -68,4 +68,10 @@ public class VideoService {
 
         return dtos;
     }
+
+    public VideoResDto findById(Long id) {
+        Video video =  videoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("해당 영상이 존재하지 않습니다"));
+        return new VideoResDto(video);
+    }
 }
