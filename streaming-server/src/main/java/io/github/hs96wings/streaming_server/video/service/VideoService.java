@@ -37,18 +37,19 @@ public class VideoService {
             MultipartFile file = videoSaveReqDto.getFile();
             String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
             String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
-            Path savePath = Paths.get(uploadDir, fileName);
+            String resourcePath = uploadDir.startsWith("/")
+                    ? uploadDir + "/"
+                    : "/" + uploadDir + "/";
+            Path uploadPath = Paths.get(uploadDir, fileName);
+            String videoUrl = baseUrl + resourcePath + fileName;
 
-            log.debug(savePath.toString());
-            log.debug(savePath.toString());
-
-            Files.createDirectories(savePath.getParent());
-            file.transferTo(savePath);
+            Files.createDirectories(uploadPath.getParent());
+            file.transferTo(uploadPath);
 
             Video video = new Video();
             video.setTitle(videoSaveReqDto.getTitle());
             video.setDescription(video.getDescription());
-            video.setVideoPath(baseUrl + uploadDir.replace(".", "") + fileName);
+            video.setVideoPath(videoUrl);
 
             videoRepository.save(video);
 
