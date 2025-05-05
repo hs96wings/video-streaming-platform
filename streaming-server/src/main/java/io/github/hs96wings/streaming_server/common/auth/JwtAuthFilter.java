@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class JwtAuthFilter extends GenericFilter {
@@ -30,10 +31,18 @@ public class JwtAuthFilter extends GenericFilter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
-        String token = request.getHeader("Authorization");
+        Set<String> protectedUrls = Set.of("/api/video");
 
-        if (token != null) {
-            if (!token.startsWith("Bearer ")) {
+        String path = request.getRequestURI();
+        String method = request.getMethod();
+
+        boolean requiresAuth = protectedUrls.stream().anyMatch(path::startsWith) && !method.equals("GET");
+
+        // 인증이 필요한 경우에만 필터 작동
+        if (requiresAuth) {
+            String token = request.getHeader("Authorization");
+
+            if (token == null || !token.startsWith("Bearer ")) {
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
                 response.setContentType("application/json");
                 response.getWriter().write("Bearer 형식이 아닙니다");
@@ -61,6 +70,7 @@ public class JwtAuthFilter extends GenericFilter {
             }
         }
 
+        // 나머지는 그냥 통과
         chain.doFilter(request, response);
     }
 }

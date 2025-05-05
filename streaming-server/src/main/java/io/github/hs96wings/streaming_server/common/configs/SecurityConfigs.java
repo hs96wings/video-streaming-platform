@@ -3,6 +3,7 @@ package io.github.hs96wings.streaming_server.common.configs;
 import io.github.hs96wings.streaming_server.common.auth.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -31,7 +32,10 @@ public class SecurityConfigs {
                 .cors(cors -> cors.configurationSource(configurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth ->  auth.requestMatchers("/member/create", "/member/doLogin").permitAll().anyRequest().authenticated())
+                .authorizeHttpRequests(auth ->  auth.requestMatchers(HttpMethod.GET, "/api/video/**").permitAll() // VIDEO 관련 GET 요청만 허용
+                        .requestMatchers("/api/video/**").hasRole("ADMIN") // ADMIN만 나머지 요청 허용
+                        .anyRequest().permitAll() // 나머지 요청은 허용
+                )
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
