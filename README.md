@@ -12,3 +12,7 @@
 - [Front] streaming-front (vue)
 - [Transcoder] streaming-transcoder (flask)
 - [Total] 두 개 이상의 폴더에 변화가 있을 때
+
+### Etc.
+
+- [Velog](https://velog.io/@hs96wings): 문제 해결은 여기에
