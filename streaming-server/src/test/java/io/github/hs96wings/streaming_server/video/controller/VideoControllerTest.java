@@ -1,18 +1,26 @@
 package io.github.hs96wings.streaming_server.video.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.hs96wings.streaming_server.video.domain.Video;
+import io.github.hs96wings.streaming_server.video.domain.VideoStatus;
+import io.github.hs96wings.streaming_server.video.dto.VideoResDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoSaveReqDto;
 import io.github.hs96wings.streaming_server.video.service.VideoService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
@@ -26,13 +34,17 @@ public class VideoControllerTest {
     @MockitoBean
     private VideoService videoService;
 
+    private VideoSaveReqDto videoSaveReqDto;
+    @BeforeEach
+    void setUp() {
+        videoSaveReqDto = new VideoSaveReqDto("테스트 제목", "테스트 설명",
+                new MockMultipartFile("file", "test.mp4", MediaType.APPLICATION_OCTET_STREAM_VALUE, "dummy content".getBytes()));
+    }
+
     @Test
     @DisplayName("영상 업로드 요청 시 201 전달")
     void uploadVideo_returnsCreated() throws Exception {
         // given
-        VideoSaveReqDto videoSaveReqDto = new VideoSaveReqDto("테스트 제목", "테스트 설명",
-                new MockMultipartFile("file", "test.mp4", MediaType.APPLICATION_OCTET_STREAM_VALUE, "dummy content".getBytes()));
-
         Video savedVideo = Video.builder()
                 .id(1L)
                 .title(videoSaveReqDto.getTitle())
@@ -50,5 +62,35 @@ public class VideoControllerTest {
                         .param("description", videoSaveReqDto.getDescription()))
                         .andExpect(status().isCreated())
                         .andExpect(content().string("1"));
+    }
+
+    @Test
+    @DisplayName("영상 리스트 요청 시 200 전달")
+    void getVideoList_returnsOkAndJson() throws Exception {
+        // given: 더미 VideoResDto 객체를 직접 만든다
+        VideoResDto dto = new VideoResDto();
+        dto.setId(1L);
+        dto.setTitle("테스트 영상");
+        dto.setDescription("테스트 설명");
+        dto.setVideoPath("/uploads/videos/test.mp4");
+        dto.setThumbnailPath("/path/to/thumb.png");
+        dto.setUploadedAt(LocalDateTime.of(2025, 5, 5, 12, 0));
+        dto.setVideoStatus(VideoStatus.UPLOADED);
+
+        List<VideoResDto> videoResDtos = List.of(dto);
+
+        // videoService.getVideos()가 호출되면 dummyList를 반환하도록 세팅
+        when(videoService.getVideos()).thenReturn(videoResDtos);
+
+        // when & then
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/video/list")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                // 응답 JSON 배열 길이가 1인지
+                .andExpect(jsonPath("$.length()").value(1))
+                // 첫 번째 요소의 id, title이 기댓값인지
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].title").value("테스트 영상"))
+                .andExpect(jsonPath("$[0].videoPath").value("/uploads/videos/test.mp4"));
     }
 }
