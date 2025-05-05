@@ -50,12 +50,6 @@ public class MemberServiceIntegrationTest {
     @BeforeEach
     void setUp() {
         dto = new MemberSaveReqDto("testUser", "1234");
-
-        Member member = Member.builder()
-                .userid("testUser")
-                .password(passwordEncoder.encode("1234"))
-                .build();
-        memberRepository.save(member);
     }
 
     @Test
@@ -81,7 +75,11 @@ public class MemberServiceIntegrationTest {
     @DisplayName("동일한 userid로 회원 생성 시 예외가 발생하고, DB에는 단일 레코드만 남아야 한다")
     void createDuplicateMember_throwsIllegalArgument() {
         // given
-        memberService.create(dto);
+        Member member = Member.builder()
+                .userid("testUser")
+                .password(passwordEncoder.encode("1234"))
+                .build();
+        memberRepository.save(member);
 
         // when & then
         IllegalArgumentException ex = assertThrows(
@@ -100,8 +98,11 @@ public class MemberServiceIntegrationTest {
     @Test
     @DisplayName("통합 로그인 테스트: 실제 JWT를 발급받는다")
     void loginIntegration() throws Exception {
+        // given
+        memberService.create(dto);
         MemberLoginReqDto memberLoginReqDto = new MemberLoginReqDto("testUser", "1234");
 
+        // when & then
         MvcResult mvcResult = mockMvc.perform(post("/member/doLogin")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(memberLoginReqDto)))
