@@ -94,4 +94,12 @@ public class VideoService {
 
         return modifyVideo;
     }
+
+    @Transactional
+    public void delete(Long id) {
+        Video deleteVideo = videoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 영상이 존재하지 않습니다"));
+
+        videoRepository.delete(deleteVideo);
+    }
 }

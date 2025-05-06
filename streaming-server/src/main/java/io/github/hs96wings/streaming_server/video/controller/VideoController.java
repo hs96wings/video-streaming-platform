@@ -5,6 +5,7 @@ import io.github.hs96wings.streaming_server.video.dto.VideoModifyReqDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoResDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoSaveReqDto;
 import io.github.hs96wings.streaming_server.video.service.VideoService;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,5 +46,12 @@ public class VideoController {
         Video modifyVideo = videoService.modify(id, videoModifyReqDto);
 
         return ResponseEntity.ok(new VideoResDto(modifyVideo));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteVideo(@PathVariable("id") Long id) {
+        videoService.delete(id);
+
+        return ResponseEntity.ok(id);
     }
 }
