@@ -22,10 +22,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -126,11 +128,11 @@ public class VideoServiceIntegrationTest {
     @Test
     @DisplayName("없는 영상 요청 시 오류를 반환한다")
     void findNotFoundVideo_ReturnError() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> videoService.findById(1000L));
+        assertThrows(IllegalArgumentException.class, () -> videoService.findById(1000L));
     }
 
     @Test
-    @DisplayName("DB에서 영상 하나를 저장하고 수정한다")
+    @DisplayName("DB에 영상 하나를 저장하고 수정한다")
     void uploadAndModifyVideo_persistsAndRetrievesVideo() {
         // given
         Video uploaded = videoService.upload(videoSaveReqDto);
@@ -157,6 +159,26 @@ public class VideoServiceIntegrationTest {
     @Test
     @DisplayName("DB에 없는 영상을 수정 요청 시 오류를 반환한다")
     void modifyNotFoundVideo_ReturnError() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> videoService.modify(1000L, videoModifyReqDto));
+        assertThrows(IllegalArgumentException.class, () -> videoService.modify(1000L, videoModifyReqDto));
+    }
+
+    @Test
+    @DisplayName("DB에 영상 하나를 저장하고 삭제한다")
+    void uploadAndDeleteVideo_persistsAndRetrievesVideo() {
+        // given
+        Video uploaded = videoService.upload(videoSaveReqDto);
+
+        // when
+        videoService.delete(uploaded.getId());
+
+        // then: repository.findById가 빈 Optional을 반환했는지 검증
+        Optional<Video> deleted = videoRepository.findById(uploaded.getId());
+        assertThat(deleted).isEmpty();
+    }
+
+    @Test
+    @DisplayName("DB에 없는 영상을 삭제 요청 시 오류를 반환한다")
+    void deleteNotFoundVideo_ReturnError() {
+        assertThrows(IllegalArgumentException.class, () -> videoService.delete(1000L));
     }
 }
