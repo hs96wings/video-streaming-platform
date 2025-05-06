@@ -38,16 +38,18 @@ public class VideoServiceIntegrationTest {
     VideoRepository videoRepository;
 
     private VideoSaveReqDto videoSaveReqDto;
+    private VideoModifyReqDto videoModifyReqDto;
+
     private static final Logger log = LoggerFactory.getLogger(MemberServiceIntegrationTest.class);
 
     @BeforeEach
     void setUp() {
         videoSaveReqDto = new VideoSaveReqDto("테스트 제목", "테스트 설명",
                 new MockMultipartFile("file", "test.mp4", MediaType.APPLICATION_OCTET_STREAM_VALUE, "dummy content".getBytes()));
+        videoModifyReqDto = new VideoModifyReqDto("수정된 제목", "수정된 설명");
     }
 
     @Test
-    @Transactional
     @DisplayName("DB에 영상을 저장한다")
     void uploadVideo_shouldPersist() {
         // given
@@ -64,7 +66,6 @@ public class VideoServiceIntegrationTest {
     }
 
     @Test
-    @Transactional
     @DisplayName("DB에서 영상 리스트를 가져온다")
     void getVideoList_shouldReturnPersistedVideos() {
         // given: 2개의 Video 엔티티를 직접 저장
@@ -100,7 +101,6 @@ public class VideoServiceIntegrationTest {
     }
 
     @Test
-    @Transactional
     @DisplayName("DB에서 영상 하나를 저장하고 조회한다")
     void uploadAndFindVideo_persistsAndRetrievesVideo() {
         // given: @BeforeEach에 있습니다
@@ -124,12 +124,16 @@ public class VideoServiceIntegrationTest {
     }
 
     @Test
-    @Transactional
+    @DisplayName("없는 영상 요청 시 오류를 반환한다")
+    void findNotFoundVideo_ReturnError() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> videoService.findById(1000L));
+    }
+
+    @Test
     @DisplayName("DB에서 영상 하나를 저장하고 수정한다")
     void uploadAndModifyVideo_persistsAndRetrievesVideo() {
         // given
         Video uploaded = videoService.upload(videoSaveReqDto);
-        VideoModifyReqDto videoModifyReqDto = new VideoModifyReqDto("수정된 제목", "수정된 설명");
 
         // when
         videoService.modify(uploaded.getId(), videoModifyReqDto);
@@ -148,5 +152,11 @@ public class VideoServiceIntegrationTest {
                 () -> assertThat(found.getUploadedAt()).isEqualTo(uploaded.getUploadedAt()),
                 () -> assertThat(found.getVideoStatus()).isEqualTo(uploaded.getVideoStatus())
         );
+    }
+
+    @Test
+    @DisplayName("DB에 없는 영상을 수정 요청 시 오류를 반환한다")
+    void modifyNotFoundVideo_ReturnError() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> videoService.modify(1000L, videoModifyReqDto));
     }
 }
