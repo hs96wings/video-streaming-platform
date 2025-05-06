@@ -158,7 +158,7 @@ public class VideoControllerTest {
         when(videoService.modify(anyLong(), any(VideoModifyReqDto.class))).thenReturn(video);
 
         // when & then
-        mockMvc.perform(put("/api/video/{id}", 1L)
+        mockMvc.perform(patch("/api/video/{id}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(videoModifyReqDto)))
                 .andExpect(status().isOk())
@@ -173,7 +173,7 @@ public class VideoControllerTest {
         when(videoService.modify(anyLong(), any(VideoModifyReqDto.class))).thenThrow(new IllegalArgumentException("해당 영상이 존재하지 않습니다"));
 
         // when & then
-        mockMvc.perform(put("/api/video/1000")
+        mockMvc.perform(patch("/api/video/1000")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(videoModifyReqDto)))
                 .andExpect(status().isBadRequest())
@@ -210,5 +210,35 @@ public class VideoControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("해당 영상이 존재하지 않습니다"));
+    }
+
+    @Test
+    @DisplayName("VideoStatus 변경 요청 시 200 전달")
+    void updateVideoStatus_returnOk() throws Exception {
+        // given: updateStatus()는 기본 동작 (아무 예외 없이 성공) 그대로
+
+        // 불필요한 stub: 기본적으로 void 메서드는 아무 동작없이 넘어가도록 설정되어 있음
+
+        // when & then
+        mockMvc.perform(patch("/api/video/{id}/status", 1L).param("status", "PROCESSING")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string("1"));
+
+        // and then: 서비스에 delete(1L)이 호출됐는지 검증
+        verify(videoService).updateStatus(1L, VideoStatus.PROCESSING);
+    }
+
+    @Test
+    @DisplayName("videoStatus 변경 시 잘못된 값을 요청하면 400 전달")
+    void updateVideoStatus_returnBadRequest() throws Exception {
+        // given: updateStatus()는 기본 동작 (아무 예외 없이 성공) 그대로
+
+        // 불필요한 stub: 기본적으로 void 메서드는 아무 동작없이 넘어가도록 설정되어 있음
+
+        // when & then
+        mockMvc.perform(patch("/api/video/{id}/status", 1L).param("status", "INVALID")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 }

@@ -42,7 +42,7 @@ public class VideoController {
         return new ResponseEntity<>(video, HttpStatus.OK);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<?> modifyVideo(@PathVariable("id") Long id, @RequestBody VideoModifyReqDto videoModifyReqDto) {
         Video modifyVideo = videoService.modify(id, videoModifyReqDto);
 
@@ -56,7 +56,7 @@ public class VideoController {
         return ResponseEntity.ok(id);
     }
 
-    @PutMapping("/{id}/status")
+    @PatchMapping("/{id}/status")
     public ResponseEntity<?> modifyVideoStatus(@PathVariable("id") Long id, @RequestParam("status") VideoStatus status) {
         videoService.updateStatus(id, status);
 
