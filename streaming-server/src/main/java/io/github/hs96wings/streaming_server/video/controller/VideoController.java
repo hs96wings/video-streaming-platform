@@ -1,6 +1,7 @@
 package io.github.hs96wings.streaming_server.video.controller;
 
 import io.github.hs96wings.streaming_server.video.domain.Video;
+import io.github.hs96wings.streaming_server.video.domain.VideoStatus;
 import io.github.hs96wings.streaming_server.video.dto.VideoModifyReqDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoResDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoSaveReqDto;
@@ -51,6 +52,13 @@ public class VideoController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteVideo(@PathVariable("id") Long id) {
         videoService.delete(id);
+
+        return ResponseEntity.ok(id);
+    }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> modifyVideoStatus(@PathVariable("id") Long id, @RequestParam("status") VideoStatus status) {
+        videoService.updateStatus(id, status);
 
         return ResponseEntity.ok(id);
     }
