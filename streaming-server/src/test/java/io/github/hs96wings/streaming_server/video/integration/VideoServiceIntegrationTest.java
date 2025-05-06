@@ -2,6 +2,7 @@ package io.github.hs96wings.streaming_server.video.integration;
 
 import io.github.hs96wings.streaming_server.member.integration.MemberServiceIntegrationTest;
 import io.github.hs96wings.streaming_server.video.domain.Video;
+import io.github.hs96wings.streaming_server.video.domain.VideoStatus;
 import io.github.hs96wings.streaming_server.video.dto.VideoModifyReqDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoResDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoSaveReqDto;
@@ -180,5 +181,20 @@ public class VideoServiceIntegrationTest {
     @DisplayName("DB에 없는 영상을 삭제 요청 시 오류를 반환한다")
     void deleteNotFoundVideo_ReturnError() {
         assertThrows(IllegalArgumentException.class, () -> videoService.delete(1000L));
+    }
+
+    @Test
+    @DisplayName("DB에 영상 하나를 저장하고 VideoStatus 값을 변경한다")
+    void uploadAndUpdateVideoStatus_persistsAndRetrievesVideo() {
+        // given
+        Video uploaded = videoService.upload(videoSaveReqDto);
+
+        // when
+        videoService.updateStatus(uploaded.getId(), VideoStatus.PROCESSING);
+
+        // then
+        Video found = videoRepository.findById(uploaded.getId())
+                        .orElseThrow(() -> new AssertionError("조회된 영상이 없습니다"));
+        assertThat(found.getVideoStatus()).isEqualTo(VideoStatus.PROCESSING);
     }
 }
