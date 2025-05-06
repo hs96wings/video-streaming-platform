@@ -179,4 +179,36 @@ public class VideoControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(containsString("해당 영상이 존재하지 않습니다")));
     }
+
+    @Test
+    @DisplayName("영상 하나 삭제 요청 시 200 전달")
+    void deleteVideo_returnsOk() throws Exception {
+        // given: delete()는 기본 동작 (아무 예외 없이 성공) 그대로
+
+        // 불필요한 stub: 기본적으로 void 메서드는 아무 동작없이 넘어가도록 설정되어 있음
+        // doNothing().when(videoService).delete(anyLong());
+
+        // when & then
+        mockMvc.perform(delete("/api/video/{id}", 1L)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string("1"));
+
+        // and then: 서비스에 delete(1L)이 호출됐는지 검증
+        verify(videoService).delete(1L);
+    }
+
+    @Test
+    @DisplayName("없는 영상 삭제 요청 시 400 전달")
+    void deleteNotFoundVideo_returnBadRequest() throws Exception {
+        // given: delete가 예외를 던지도록 설정
+        doThrow(new IllegalArgumentException("해당 영상이 존재하지 않습니다"))
+                .when(videoService).delete(anyLong());
+
+        // when & then
+        mockMvc.perform(delete("/api/video/{id}", 1000L)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("해당 영상이 존재하지 않습니다"));
+    }
 }
