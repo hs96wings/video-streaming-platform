@@ -1,12 +1,16 @@
 from flask import Flask, jsonify
-from flask_cors import CORS
+from threading import Thread
+from worker import worker_loop
 
 app = Flask(__name__)
-CORS(app) # 모든 도메인에서 접근 가능
 
-@app.route('/')
-def hello():
-    return jsonify(message="Flask 서버가 잘 작동 중입니다!")
+@app.route('/health', methods=["GET"])
+def health():
+    return jsonify(status='ok'), 200
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # 백그라운드에서 worker_loop 실행
+    t = Thread(target=worker_loop, daemon=True)
+    t.start()
+
+    app.run()
