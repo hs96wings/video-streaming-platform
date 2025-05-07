@@ -36,7 +36,8 @@ public class JwtAuthFilter extends GenericFilter {
         String path = request.getRequestURI();
         String method = request.getMethod();
 
-        boolean requiresAuth = protectedUrls.stream().anyMatch(path::startsWith) && !method.equals("GET");
+        boolean isStatusPatch = method.equals("PATCH") && path.matches("/api/video/\\d+/status"); // flask를 위함
+        boolean requiresAuth = path.startsWith("/api/video/") && !(method.equals("GET") || isStatusPatch);
 
         // 인증이 필요한 경우에만 필터 작동
         if (requiresAuth) {

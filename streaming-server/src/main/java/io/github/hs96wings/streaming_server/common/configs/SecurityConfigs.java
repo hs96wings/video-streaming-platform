@@ -33,6 +33,7 @@ public class SecurityConfigs {
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->  auth.requestMatchers(HttpMethod.GET, "/api/video/**").permitAll() // VIDEO 관련 GET 요청만 허용
+                        .requestMatchers(HttpMethod.PATCH, "/api/video/*/status").permitAll() // flask를 위한 요청 허용 (Header 값으로 검증 예정)
                         .requestMatchers("/api/video/**").hasRole("ADMIN") // ADMIN만 나머지 요청 허용
                         .anyRequest().permitAll() // 나머지 요청은 허용
                 )
