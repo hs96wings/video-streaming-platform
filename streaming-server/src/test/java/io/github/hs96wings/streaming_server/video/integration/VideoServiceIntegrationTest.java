@@ -3,6 +3,7 @@ package io.github.hs96wings.streaming_server.video.integration;
 import io.github.hs96wings.streaming_server.member.integration.MemberServiceIntegrationTest;
 import io.github.hs96wings.streaming_server.video.domain.Video;
 import io.github.hs96wings.streaming_server.video.domain.VideoStatus;
+import io.github.hs96wings.streaming_server.video.dto.VideoHlsReqDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoModifyReqDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoResDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoSaveReqDto;
@@ -188,9 +189,10 @@ public class VideoServiceIntegrationTest {
     void uploadAndUpdateVideoStatus_persistsAndRetrievesVideo() {
         // given
         Video uploaded = videoService.upload(videoSaveReqDto);
+        VideoHlsReqDto videoHlsReqDto = new VideoHlsReqDto();
 
         // when
-        videoService.updateStatus(uploaded.getId(), VideoStatus.PROCESSING);
+        videoService.updateStatus(uploaded.getId(), VideoStatus.PROCESSING, videoHlsReqDto);
 
         // then
         Video found = videoRepository.findById(uploaded.getId())

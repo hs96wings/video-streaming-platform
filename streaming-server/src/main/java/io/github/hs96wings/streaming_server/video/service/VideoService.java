@@ -3,6 +3,7 @@ package io.github.hs96wings.streaming_server.video.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.hs96wings.streaming_server.video.domain.Video;
 import io.github.hs96wings.streaming_server.video.domain.VideoStatus;
+import io.github.hs96wings.streaming_server.video.dto.VideoHlsReqDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoModifyReqDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoResDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoSaveReqDto;
@@ -117,10 +118,16 @@ public class VideoService {
     }
 
     @Transactional
-    public void updateStatus(Long id, VideoStatus status) {
+    public void updateStatus(Long id, VideoStatus status, VideoHlsReqDto videoHlsReqDto) {
         Video video = videoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 영상이 존재하지 않습니다"));
 
         video.setVideoStatus(status);
+
+        if (videoHlsReqDto.getVideoPath() != null)
+            video.setVideoPath(videoHlsReqDto.getVideoPath());
+
+        if (videoHlsReqDto.getThumbnailPath() != null)
+            video.setThumbnailPath(videoHlsReqDto.getThumbnailPath());
     }
 }

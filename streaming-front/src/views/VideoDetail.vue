@@ -5,7 +5,12 @@
                 <v-card>
                     <v-card-title class="text-h5 text-center">{{ title }}</v-card-title>
                     <v-card-text>
-                        <video :src="videoPath"></video>
+                        <video
+                            ref="hlsPlayer"
+                            controls
+                            width="540"
+                            height="960"
+                            crossorigin="anonymous"></video>
                     </v-card-text>
                     <v-btn
                         href="/list"
@@ -21,6 +26,7 @@
 
 <script>
 import axios from 'axios'
+import Hls from 'hls.js'
 
 export default {
     data() {
@@ -37,6 +43,25 @@ export default {
         this.title = response.data.title;
         this.videoPath = response.data.videoPath;
         this.description = response.data.description;
+
+        const video = this.$refs.hlsPlayer;
+        // safari (iOS)에서는 네이티브 재생
+        if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = this.videoPath;
+        } else if (Hls.isSupported()) {
+            // 그 외 브라우저에는 Hls.js로 붙여주기
+            const hls = new Hls();
+            hls.loadSource(this.videoPath);
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                video.play();
+            })
+        }
+    },
+    methods: {
+        hlsPlayer() {
+            
+        }
     }
 }
 </script>

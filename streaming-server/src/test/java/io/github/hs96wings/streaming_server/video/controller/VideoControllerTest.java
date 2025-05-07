@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.hs96wings.streaming_server.member.integration.MemberServiceIntegrationTest;
 import io.github.hs96wings.streaming_server.video.domain.Video;
 import io.github.hs96wings.streaming_server.video.domain.VideoStatus;
+import io.github.hs96wings.streaming_server.video.dto.VideoHlsReqDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoModifyReqDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoResDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoSaveReqDto;
@@ -216,6 +217,7 @@ public class VideoControllerTest {
     @DisplayName("VideoStatus 변경 요청 시 200 전달")
     void updateVideoStatus_returnOk() throws Exception {
         // given: updateStatus()는 기본 동작 (아무 예외 없이 성공) 그대로
+        VideoHlsReqDto videoHlsReqDto = new VideoHlsReqDto();
 
         // 불필요한 stub: 기본적으로 void 메서드는 아무 동작없이 넘어가도록 설정되어 있음
 
@@ -226,7 +228,7 @@ public class VideoControllerTest {
                 .andExpect(content().string("1"));
 
         // and then: 서비스에 delete(1L)이 호출됐는지 검증
-        verify(videoService).updateStatus(1L, VideoStatus.PROCESSING);
+        verify(videoService).updateStatus(1L, VideoStatus.PROCESSING, videoHlsReqDto);
     }
 
     @Test
