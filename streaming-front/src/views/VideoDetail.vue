@@ -13,7 +13,7 @@
                             crossorigin="anonymous"></video>
                     </v-card-text>
                     <v-btn
-                        href="/list"
+                        @click="goToBack()"
                         target="_self"
                         rel="noopener">
                         돌아가기
@@ -59,8 +59,8 @@ export default {
         }
     },
     methods: {
-        hlsPlayer() {
-            
+        goToBack() {
+            this.$router.push("/list");
         }
     }
 }

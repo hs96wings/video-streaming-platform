@@ -37,7 +37,7 @@ export default {
     },
     methods: {
         goToVideo(id) {
-            window.location.href="/video/" + id;
+            this.$router.push(`/video/${id}`);
         }
     }
 }

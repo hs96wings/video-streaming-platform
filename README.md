@@ -5,6 +5,7 @@
 - Flask: ffmpeg으로 동영상 처리, 썸네일 생성
 - MySQL: 사용자/동영상/댓글 등 저장
 - Redis: 작업 큐 브로커 및 결과 캐싱, 메타데이터나 플레이리스트 캐시
+- Docker
 
 ## 깃허브에 commit할 땐 아래와 같이 명시함
 
@@ -16,3 +17,4 @@
 ### Etc.
 
 - [Velog](https://velog.io/@hs96wings): 문제 해결은 여기에
+- [Site](http://43.200.192.246/#/)

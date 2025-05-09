@@ -42,7 +42,7 @@ export default {
             const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/member/create`, createData)
             const token = response.data.token
             localStorage.setItem("token", token)
-            window.location.href = "/"
+            this.$router.push("/");
         }
     }
 }
