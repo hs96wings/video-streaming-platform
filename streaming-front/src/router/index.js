@@ -5,6 +5,8 @@ import HomePage from '@/views/HomePage.vue'
 import VideoUpload from "@/views/VideoUpload.vue"
 import VideoList from '@/views/VideoList.vue'
 import VideoDetail from '@/views/VideoDetail.vue'
+import AdminPage from '@/views/AdminPage.vue'
+import AdminUpdatePage from "@/views/AdminUpdatePage.vue"
 
 import { jwtDecode } from 'jwt-decode'
 
@@ -14,7 +16,9 @@ const routes = [
     { path: '/login', name: 'MemberLogin', component: MemberLogin },
     { path: '/upload', name: 'VideoUpload', component: VideoUpload, meta: { requireAuth: true, requireAdmin: true }},
     { path: '/list', name: 'VideoList', component: VideoList },
-    { path: '/video/:id', name: 'VideoDetail', component: VideoDetail }
+    { path: '/video/:id', name: 'VideoDetail', component: VideoDetail },
+    { path: '/admin', name: 'AdminPage', component: AdminPage, meta: { requireAuth: true, requireAdmin: true }},
+    { path: '/update/:id', name: 'AdminUpdatePage', component: AdminUpdatePage, meta: { requireAuth: true, requireAdmin: true }}
 ]
 
 const router = createRouter({

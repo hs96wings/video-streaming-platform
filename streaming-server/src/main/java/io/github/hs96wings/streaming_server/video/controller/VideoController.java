@@ -2,12 +2,8 @@ package io.github.hs96wings.streaming_server.video.controller;
 
 import io.github.hs96wings.streaming_server.video.domain.Video;
 import io.github.hs96wings.streaming_server.video.domain.VideoStatus;
-import io.github.hs96wings.streaming_server.video.dto.VideoHlsReqDto;
-import io.github.hs96wings.streaming_server.video.dto.VideoModifyReqDto;
-import io.github.hs96wings.streaming_server.video.dto.VideoResDto;
-import io.github.hs96wings.streaming_server.video.dto.VideoSaveReqDto;
+import io.github.hs96wings.streaming_server.video.dto.*;
 import io.github.hs96wings.streaming_server.video.service.VideoService;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -69,5 +65,12 @@ public class VideoController {
         List<VideoResDto> videoResDtos = videoService.searchByTitle(title);
 
         return new ResponseEntity<>(videoResDtos, HttpStatus.OK);
+    }
+
+    @GetMapping("/status")
+    public ResponseEntity<?> statusVideo() {
+        List<VideoAdminResDto> videoAdminResDtos = videoService.findAll();
+
+        return new ResponseEntity<>(videoAdminResDtos, HttpStatus.OK);
     }
 }

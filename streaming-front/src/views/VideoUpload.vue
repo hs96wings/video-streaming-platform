@@ -51,7 +51,7 @@ export default {
             formData.append("file", this.file)
 
             await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/video/upload`, formData)
-            .then(() => this.$router.push('/list'))
+            .then(() => this.$router.push('/admin'))
             .catch(err => console.log(`업로드 실패: ${err.response.data} ${formData}`))
         }
     }

@@ -3,10 +3,7 @@ package io.github.hs96wings.streaming_server.video.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.hs96wings.streaming_server.video.domain.Video;
 import io.github.hs96wings.streaming_server.video.domain.VideoStatus;
-import io.github.hs96wings.streaming_server.video.dto.VideoHlsReqDto;
-import io.github.hs96wings.streaming_server.video.dto.VideoModifyReqDto;
-import io.github.hs96wings.streaming_server.video.dto.VideoResDto;
-import io.github.hs96wings.streaming_server.video.dto.VideoSaveReqDto;
+import io.github.hs96wings.streaming_server.video.dto.*;
 import io.github.hs96wings.streaming_server.video.repository.VideoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,6 +125,14 @@ public class VideoService {
                 .findByVideoStatusAndTitleContaining(VideoStatus.READY, title)
                 .stream()
                 .map(VideoResDto::new)
+                .collect(Collectors.toList());
+    }
+
+    public List<VideoAdminResDto> findAll() {
+        return videoRepository
+                .findAll()
+                .stream()
+                .map(VideoAdminResDto::new)
                 .collect(Collectors.toList());
     }
 }
