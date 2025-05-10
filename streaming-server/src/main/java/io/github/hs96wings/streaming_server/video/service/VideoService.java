@@ -31,7 +31,7 @@ import java.util.UUID;
 public class VideoService {
     private final VideoRepository videoRepository;
     private final StringRedisTemplate redis;
-    @Value("${app.video.dir}")
+    @Value("${app.upload.dir}")
     private String uploadDir;
     private static final Logger log = LoggerFactory.getLogger(VideoService.class);
 
@@ -48,8 +48,13 @@ public class VideoService {
             String resourcePath = uploadDir.startsWith("/")
                     ? uploadDir + "/"
                     : "/" + uploadDir + "/";
-            Path uploadPath = Paths.get(uploadDir, fileName);
+            String localPath = uploadDir + "/videos/" + fileName;
+            Path uploadPath = Paths.get(localPath);
             String videoUrl = baseUrl + resourcePath + fileName;
+
+            log.info("localPath = " + localPath);
+            log.info("uploadPath = " + uploadPath.toString());
+            log.info("videoUrl = " + videoUrl);
 
             Files.createDirectories(uploadPath.getParent());
             file.transferTo(uploadPath);
@@ -66,7 +71,9 @@ public class VideoService {
                     "videoId", video.getId(),
                     "path", video.getVideoPath()
             ));
-            redis.opsForList().rightPush("videoQueue", job);
+
+            redis.opsForList().leftPush("videoQueue", "{\"videoId\": " + video.getId() + ", \"path\": \"" + localPath + "\"}");
+            // redis.opsForList().rightPush("videoQueue", job);
 
             return video;
         } catch (IOException e) {

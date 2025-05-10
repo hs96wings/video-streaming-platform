@@ -12,6 +12,10 @@ Thumbs.db
 # 환경변수 파일
 *.env
 
+# 배포 전용 파일
+Dockerfile
+docker-compose.yml
+
 # --- Spring Boot (Java) --------------
 streaming-server/target/
 streaming-server/.mvn/
@@ -26,6 +30,8 @@ streaming-server/uploads/
 streaming-front/node_modules/
 streaming-front/dist/
 streaming-front/yarn-error.log
+# 배포 전용 파일 제외
+streaming-front/.env(prod)
 
 
 # --- Flask (Python) --------------
@@ -33,3 +39,5 @@ streaming-transcoder/__pycache__/
 streaming-transcoder/*.py[cod]
 streaming-transcoder/venv/
 streaming-transcoder/env/
+# 배포 전용 파일 제외
+streaming-transcoder/worker-prod.py

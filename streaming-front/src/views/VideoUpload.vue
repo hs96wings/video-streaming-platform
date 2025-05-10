@@ -19,7 +19,6 @@
                             <v-file-input
                                 label="영상 파일"
                                 @change="onFileChange">
-
                             </v-file-input>
                             <v-btn type="submit" color="primary" block>업로드</v-btn>
                         </v-form>
@@ -53,7 +52,7 @@ export default {
 
             await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/video/upload`, formData)
             .then(() => this.$router.push('/list'))
-            .catch(err => console.log(`업로드 실패: ${err.response.data}`))
+            .catch(err => console.log(`업로드 실패: ${err.response.data} ${formData}`))
         }
     }
 }
