@@ -244,4 +244,34 @@ public class VideoControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    @DisplayName("영상 검색 요청 시 200 전달")
+    void searchVideoByTitle_returnsOkAndJson() throws Exception {
+        // given: 더미 VideoResDto 객체를 직접 만든다
+        VideoResDto dto = new VideoResDto();
+        dto.setId(1L);
+        dto.setTitle("테스트 영상");
+        dto.setDescription("테스트 설명");
+        dto.setVideoPath("/uploads/videos/test.mp4");
+        dto.setThumbnailPath("/path/to/thumb.png");
+        dto.setUploadedAt(LocalDateTime.of(2025, 5, 5, 12, 0));
+        dto.setVideoStatus(VideoStatus.READY);
+
+        List<VideoResDto> videoResDtos = List.of(dto);
+
+        // videoService.searchVideo()가 호출되면 dummyList를 반환하도록 세팅
+        when(videoService.searchByTitle(any())).thenReturn(videoResDtos);
+
+        // when & then
+        mockMvc.perform(get("/api/video/search").param("title", "테스트")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                // 응답 JSON 배열 길이가 1인지
+                .andExpect(jsonPath("$.length()").value(1))
+                // 첫 번째 요소의 id, title이 기댓값인지
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].title").value("테스트 영상"))
+                .andExpect(jsonPath("$[0].videoPath").value("/uploads/videos/test.mp4"));
+    }
 }

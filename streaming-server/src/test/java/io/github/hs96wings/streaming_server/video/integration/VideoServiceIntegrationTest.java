@@ -201,4 +201,77 @@ public class VideoServiceIntegrationTest {
                         .orElseThrow(() -> new AssertionError("조회된 영상이 없습니다"));
         assertThat(found.getVideoStatus()).isEqualTo(VideoStatus.PROCESSING);
     }
+
+    @Test
+    @DisplayName("DB에서 영상을 검색한다")
+    void searchVideoByTitle_shouldReturnPersistedVideos() {
+        // given: 2개의 Video 엔티티를 직접 저장
+        Video v1 = Video.builder()
+                .title("첫 번째 영상")
+                .description("설명")
+                .videoPath("/path/video1.mp4")
+                .thumbnailPath("/thumb/video1.mp4")
+                .videoStatus(VideoStatus.READY)
+                .build();
+        videoRepository.save(v1);
+        Video v2 = Video.builder()
+                .title("두 번째 영상")
+                .description("설명")
+                .videoPath("/path/video2.mp4")
+                .thumbnailPath("/thumb/video2.mp4")
+                .videoStatus(VideoStatus.READY)
+                .build();
+        videoRepository.save(v2);
+
+        // when: service 를 통해 DTO 리스트 조회
+        List<VideoResDto> dtos = videoService.searchByTitle("두 번째");
+
+        // then: 사이즈 검증 + ID, 제목 매핑 확인
+        assertThat(dtos)
+                .hasSize(1)
+                .extracting(
+                        VideoResDto::getId,
+                        VideoResDto::getTitle
+                )
+                .containsExactlyInAnyOrder(
+                        tuple(v2.getId(), "두 번째 영상")
+                );
+    }
+
+    @Test
+    @DisplayName("DB에서 영상을 검색 시 타이틀이 없으면 전체 목록을 리턴한다")
+    void searchVideoByNoTitle_shouldReturnPersistedVideos() {
+        // given: 2개의 Video 엔티티를 직접 저장
+        Video v1 = Video.builder()
+                .title("첫 번째 영상")
+                .description("설명")
+                .videoPath("/path/video1.mp4")
+                .thumbnailPath("/thumb/video1.mp4")
+                .videoStatus(VideoStatus.READY)
+                .build();
+        videoRepository.save(v1);
+        Video v2 = Video.builder()
+                .title("두 번째 영상")
+                .description("설명")
+                .videoPath("/path/video2.mp4")
+                .thumbnailPath("/thumb/video2.mp4")
+                .videoStatus(VideoStatus.READY)
+                .build();
+        videoRepository.save(v2);
+
+        // when: service 를 통해 DTO 리스트 조회
+        List<VideoResDto> dtos = videoService.searchByTitle("");
+
+        // then: 사이즈 검증 + ID, 제목 매핑 확인
+        assertThat(dtos)
+                .hasSize(2)
+                .extracting(
+                        VideoResDto::getId,
+                        VideoResDto::getTitle
+                )
+                .containsExactlyInAnyOrder(
+                        tuple(v1.getId(), "첫 번째 영상"),
+                        tuple(v2.getId(), "두 번째 영상")
+                );
+    }
 }
