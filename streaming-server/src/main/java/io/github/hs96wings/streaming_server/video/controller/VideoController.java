@@ -67,8 +67,8 @@ public class VideoController {
         return new ResponseEntity<>(videoResDtos, HttpStatus.OK);
     }
 
-    @GetMapping("/status")
-    public ResponseEntity<?> statusVideo() {
+    @GetMapping("/admin")
+    public ResponseEntity<?> getAllVideosForAdmin() {
         List<VideoAdminResDto> videoAdminResDtos = videoService.findAll();
 
         return new ResponseEntity<>(videoAdminResDtos, HttpStatus.OK);

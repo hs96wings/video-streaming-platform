@@ -36,7 +36,7 @@ export default {
         }
     },
     async created() {
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/video/status`);
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/video/admin`);
         this.videoList = response.data;
     },
     methods: {
@@ -45,7 +45,7 @@ export default {
         },
         async deleteVideo(id) {
             await axios.delete(`${process.env.VUE_APP_API_BASE_URL}/api/video/${id}`)
-            window.location.reload();
+            this.videoList = this.videoList.filter(v => v.id !== id)
         }
     }
 }
