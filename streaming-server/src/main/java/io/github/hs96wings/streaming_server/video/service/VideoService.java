@@ -86,6 +86,11 @@ public class VideoService {
         List<VideoResDto> dtos = new ArrayList<>();
         for (Video v : videoList) {
             VideoResDto dto = new VideoResDto();
+
+            // 처리 중인 영상은 처리가 완료될 때까지 리스트에서 볼 수 없음
+            if (!v.getVideoStatus().equals(VideoStatus.READY))
+                continue;
+
             dto.setId(v.getId());
             dto.setTitle(v.getTitle());
             dto.setDescription(v.getDescription());
