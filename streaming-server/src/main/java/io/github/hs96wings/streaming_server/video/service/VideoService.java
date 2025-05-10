@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -52,10 +53,6 @@ public class VideoService {
             Path uploadPath = Paths.get(localPath);
             String videoUrl = baseUrl + resourcePath + fileName;
 
-            log.info("localPath = " + localPath);
-            log.info("uploadPath = " + uploadPath.toString());
-            log.info("videoUrl = " + videoUrl);
-
             Files.createDirectories(uploadPath.getParent());
             file.transferTo(uploadPath);
 
@@ -82,26 +79,7 @@ public class VideoService {
     }
 
     public List<VideoResDto> getVideos() {
-        List<Video> videoList = videoRepository.findAll();
-        List<VideoResDto> dtos = new ArrayList<>();
-        for (Video v : videoList) {
-            VideoResDto dto = new VideoResDto();
-
-            // 처리 중인 영상은 처리가 완료될 때까지 리스트에서 볼 수 없음
-            if (!v.getVideoStatus().equals(VideoStatus.READY))
-                continue;
-
-            dto.setId(v.getId());
-            dto.setTitle(v.getTitle());
-            dto.setDescription(v.getDescription());
-            dto.setVideoPath(v.getVideoPath());
-            dto.setThumbnailPath(v.getThumbnailPath());
-            dto.setUploadedAt(v.getUploadedAt());
-            dto.setVideoStatus(v.getVideoStatus());
-            dtos.add(dto);
-        }
-
-        return dtos;
+        return searchByTitle("");
     }
 
     public VideoResDto findById(Long id) {
@@ -141,5 +119,15 @@ public class VideoService {
 
         if (videoHlsReqDto.getThumbnailPath() != null)
             video.setThumbnailPath(videoHlsReqDto.getThumbnailPath());
+    }
+
+    public List<VideoResDto> searchByTitle(String title) {
+        if (title == null) title = "";
+
+        return videoRepository
+                .findByVideoStatusAndTitleContaining(VideoStatus.READY, title)
+                .stream()
+                .map(VideoResDto::new)
+                .collect(Collectors.toList());
     }
 }

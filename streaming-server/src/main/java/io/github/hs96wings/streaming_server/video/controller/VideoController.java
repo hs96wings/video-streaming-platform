@@ -63,4 +63,11 @@ public class VideoController {
 
         return ResponseEntity.ok(id);
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchVideo(@RequestParam(name="title", required = false) String title) {
+        List<VideoResDto> videoResDtos = videoService.searchByTitle(title);
+
+        return new ResponseEntity<>(videoResDtos, HttpStatus.OK);
+    }
 }
