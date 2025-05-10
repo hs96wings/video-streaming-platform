@@ -78,6 +78,7 @@ public class VideoServiceIntegrationTest {
                 .description("설명")
                 .videoPath("/path/video1.mp4")
                 .thumbnailPath("/thumb/video1.mp4")
+                .videoStatus(VideoStatus.READY)
                 .build();
         videoRepository.save(v1);
         Video v2 = Video.builder()
@@ -85,6 +86,7 @@ public class VideoServiceIntegrationTest {
                 .description("설명")
                 .videoPath("/path/video2.mp4")
                 .thumbnailPath("/thumb/video2.mp4")
+                .videoStatus(VideoStatus.READY)
                 .build();
         videoRepository.save(v2);
 

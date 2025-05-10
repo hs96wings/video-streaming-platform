@@ -223,7 +223,8 @@ public class VideoControllerTest {
 
         // when & then
         mockMvc.perform(patch("/api/video/{id}/status", 1L).param("status", "PROCESSING")
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(videoHlsReqDto)))
                 .andExpect(status().isOk())
                 .andExpect(content().string("1"));
 
