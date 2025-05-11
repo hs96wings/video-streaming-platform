@@ -16,32 +16,38 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
 @Component
-public class JwtAuthFilter extends GenericFilter {
+public class JwtAuthFilter extends OncePerRequestFilter {
     @Value("${jwt.secretKey}")
     private String secretKey;
 
+    private final RequestMatcher protectedMatcher;
+
+    public JwtAuthFilter() {
+        List<RequestMatcher> matchers = List.of(
+                new AntPathRequestMatcher("/api/video/**", "POST"),
+                new AntPathRequestMatcher("/api/video/**", "PUT"),
+                new AntPathRequestMatcher("/api/video/**", "DELETE"),
+                new AntPathRequestMatcher("/api/comment/**", "POST"),
+                new AntPathRequestMatcher("/api/comment/**", "DELETE")
+                // 추가가 필요할 때마다 이 리스트에만 넣으면 OK
+        );
+        this.protectedMatcher = new OrRequestMatcher(matchers);
+    }
+
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) throws IOException, ServletException {
-        HttpServletRequest request = (HttpServletRequest) servletRequest;
-        HttpServletResponse response = (HttpServletResponse) servletResponse;
-        Set<String> protectedUrls = Set.of("/api/video");
-
-        String path = request.getRequestURI();
-        String method = request.getMethod();
-
-        boolean isStatusPatch = method.equals("PATCH") && path.matches("/api/video/\\d+/status"); // flask를 위함
-        boolean requiresAuth = path.startsWith("/api/video/") && !(method.equals("GET") || isStatusPatch);
-        boolean requiresCommentAuth = path.startsWith("/api/comment") && !method.equals("GET");
-
-        // 인증이 필요한 경우에만 필터 작동
-        if (requiresAuth || requiresCommentAuth) {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
+        if (protectedMatcher.matches(request)) {
             String token = request.getHeader("Authorization");
 
             if (token == null || !token.startsWith("Bearer ")) {
