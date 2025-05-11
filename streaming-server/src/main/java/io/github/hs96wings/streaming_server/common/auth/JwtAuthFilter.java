@@ -31,45 +31,24 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Value("${jwt.secretKey}")
     private String secretKey;
 
-    private final RequestMatcher protectedMatcher;
-
-    public JwtAuthFilter() {
-        List<RequestMatcher> matchers = List.of(
-                new AntPathRequestMatcher("/api/video/**", "POST"),
-                new AntPathRequestMatcher("/api/video/**", "PUT"),
-                new AntPathRequestMatcher("/api/video/**", "DELETE"),
-                new AntPathRequestMatcher("/api/comment/**", "POST"),
-                new AntPathRequestMatcher("/api/comment/**", "DELETE")
-                // 추가가 필요할 때마다 이 리스트에만 넣으면 OK
-        );
-        this.protectedMatcher = new OrRequestMatcher(matchers);
-    }
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
-        if (protectedMatcher.matches(request)) {
-            String token = request.getHeader("Authorization");
+        String header = request.getHeader("Authorization");
 
-            if (token == null || !token.startsWith("Bearer ")) {
-                response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                response.setContentType("application/json");
-                response.getWriter().write("Bearer 형식이 아닙니다");
-                return;
-            }
-
+        if (header != null && header.startsWith("Bearer ")) {
             try {
-                String jwtToken = token.substring(7);
+                String jwt = header.substring(7);
 
                 Claims claims = Jwts.parserBuilder()
                         .setSigningKey(secretKey)
                         .build()
-                        .parseClaimsJws(jwtToken)
+                        .parseClaimsJws(jwt)
                         .getBody();
 
-                List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + claims.get("role")));
-                UserDetails userDetails = new User(claims.getSubject(), "", authorities);
-                Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, "", authorities);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                List<GrantedAuthority> auths = List.of(new SimpleGrantedAuthority("ROLE_" + claims.get("role")));
+                UserDetails userDetails = new User(claims.getSubject(), "", auths);
+                Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, auths);
+                SecurityContextHolder.getContext().setAuthentication(auth);
             } catch (JwtException e) {
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
                 response.setContentType("application/json");
@@ -78,7 +57,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
         }
 
-        // 나머지는 그냥 통과
+        // 토큰이 없거나 잘못됐어도, 그냥 계속 chain 을 탄다
         chain.doFilter(request, response);
     }
 }

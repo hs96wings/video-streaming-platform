@@ -4,7 +4,9 @@ import io.github.hs96wings.streaming_server.common.auth.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
@@ -19,36 +21,28 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configuration
+@EnableWebSecurity
+@EnableMethodSecurity // 메서드 보안 활성화
 public class SecurityConfigs {
-    private final JwtAuthFilter jwtAuthFilter;
-
-    public SecurityConfigs(JwtAuthFilter jwtAuthFilter) {
-        this.jwtAuthFilter = jwtAuthFilter;
-    }
 
     @Bean
-    public SecurityFilterChain myFilter(HttpSecurity httpSecurity) throws Exception {
-        return httpSecurity
+    SecurityFilterChain filterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
+        http
                 .cors(cors -> cors.configurationSource(configurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth
-                        // public
-                        .requestMatchers(HttpMethod.GET, "/api/video/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/comment/**").permitAll()
-
-                        // flask worker가 쓰는 status PATCH
-                        .requestMatchers(HttpMethod.PATCH, "/api/video/*/status").permitAll()
-
-                        // 나머지 video/comment API는 인증 필요
-                        .requestMatchers("/api/video/**", "/api/comment/**").authenticated()
-
-                        // 그 외
-                        .anyRequest().permitAll() // 나머지 요청은 허용
-                )
-                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // 1) 인증 필터 등록
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .build();
+                // 2) URL 패턴별 접근권한(인가) 선언 - 여기서는 "인증된 사용자만 가능하다" 처리
+                .authorizeHttpRequests(auth -> auth
+                        // 누구나 볼 수 있는 공용 API
+                        .requestMatchers(HttpMethod.GET, "/api/video/**", "/api/comment/**").permitAll()
+                        // 그 외 /api/**는 일단 "인증된 유저"여야 열어 줌
+                        .requestMatchers("/api/**").authenticated()
+                        // 정적 리소스 등 나머지는 그대로 허용
+                        .anyRequest().permitAll()
+                );
+        return http.build();
     }
 
     @Bean
