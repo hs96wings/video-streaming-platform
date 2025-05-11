@@ -35,6 +35,8 @@ public class SecurityConfigs {
                 .authorizeHttpRequests(auth ->  auth.requestMatchers(HttpMethod.GET, "/api/video/**").permitAll() // VIDEO 관련 GET 요청만 허용
                         .requestMatchers(HttpMethod.PATCH, "/api/video/*/status").permitAll() // flask를 위한 요청 허용 (Header 값으로 검증 예정)
                         .requestMatchers("/api/video/**").hasRole("ADMIN") // ADMIN만 나머지 요청 허용
+                        .requestMatchers(HttpMethod.GET, "/api/comment/**").permitAll() // 댓글 가져오기만 모두에게 요청 허용
+                        .requestMatchers("/api/comment/**").authenticated() // 나머지 댓글 관련 요청은 로그인한 사용자에게만 허용
                         .anyRequest().permitAll() // 나머지 요청은 허용
                 )
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
