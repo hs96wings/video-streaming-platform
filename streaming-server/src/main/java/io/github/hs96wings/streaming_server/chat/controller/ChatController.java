@@ -14,7 +14,7 @@ public class ChatController {
 
     @MessageMapping("/{roomId}") // 클라이언트에서 특정 publish/roomId 형태로 메시지를 발행 시 MessageMapping 수신
     @SendTo("/topic/{roomId}") // 해당 roomId에 메시지를 발행하여 구독 중인 클라이언트에게 전송
-    public String sendMessage(@DestinationVariable Long roomId, String message) {
+    public String sendMessage(@DestinationVariable("roomId") Long roomId, String message) {
         log.debug(message);
 
         return message;

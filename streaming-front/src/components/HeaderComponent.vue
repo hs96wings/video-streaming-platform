@@ -4,6 +4,7 @@
             <v-row align="center">
                 <v-col class="d-flex justify-start">
                     <v-btn :to="{path: '/list'}">영상 목록</v-btn>
+                    <v-btn :to="{path: '/chat'}">채팅</v-btn>
                 </v-col>
                 <v-col text="text-center">
                     <v-btn :to="{path: '/'}">Home</v-btn>

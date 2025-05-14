@@ -8,11 +8,13 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@stomp/stompjs": "^7.1.1",
     "axios": "^1.9.0",
     "core-js": "^3.8.3",
     "hls.js": "^1.6.2",
     "jwt-decode": "^4.0.0",
     "pinia": "^3.0.2",
+    "sockjs-client": "^1.6.1",
     "vue": "^3.2.13",
     "vue-hls-video-player": "^1.0.1",
     "vue-router": "^4.5.1",
