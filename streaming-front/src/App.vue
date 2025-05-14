@@ -4,7 +4,7 @@
     <HeaderComponent :isAdmin="isAdmin" :isLogin="isLogin" @logout="doLogout" />
     <v-main>
       <!-- router-view에도 isLogin 전달 -->
-      <router-view :isLogin="isLogin" />
+      <router-view :isLogin="isLogin" :username="username" />
     </v-main>
   </v-app>
 </template>
@@ -22,6 +22,7 @@ export default {
     return {
       isLogin: false,
       isAdmin: false,
+      username: '',
     };
   },
   created() {
@@ -30,6 +31,7 @@ export default {
       const decodeToken = jwtDecode(token);
       this.isAdmin = decodeToken.role === 'ADMIN';
       this.isLogin = true
+      this.username = decodeToken.sub;
     }
   },
   methods: {
@@ -37,6 +39,12 @@ export default {
       localStorage.clear();
       this.isLogin = false;
       window.location.href = "/";
+    }
+  },
+  provide() {
+    return {
+      isLogin: this.isLogin,
+      username: this.username
     }
   }
 }
