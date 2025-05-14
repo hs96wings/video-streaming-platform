@@ -28,6 +28,10 @@
 import { ref } from 'vue'
 import SockJS from 'sockjs-client'
 import { Client } from '@stomp/stompjs'
+import { useAuthStore } from '@/stores/auth';
+
+const auth = useAuthStore()
+const token = auth.token;
 
 const messages = ref([])
 const newMessage = ref('')
@@ -35,6 +39,7 @@ const newMessage = ref('')
 // 1. STOMP 클라이언트 생성
 const stompClient = new Client({
     // 2. SockJS를 통해 커넥션을 만듬
+    connectHeaders: {'Authorization': `Bearer ${token}`},
     webSocketFactory: () => new SockJS(`${process.env.VUE_APP_API_BASE_URL}/connect`),
     debug: (str) => console.log('[STOMP]', str),
     reconnectDelay: 5000 // 연결 끊겼을 때 재연결 시도
