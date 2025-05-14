@@ -1,6 +1,6 @@
-package io.github.hs96wings.streaming_server.Comment.repository;
+package io.github.hs96wings.streaming_server.comment.repository;
 
-import io.github.hs96wings.streaming_server.Comment.domain.Comment;
+import io.github.hs96wings.streaming_server.comment.domain.Comment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

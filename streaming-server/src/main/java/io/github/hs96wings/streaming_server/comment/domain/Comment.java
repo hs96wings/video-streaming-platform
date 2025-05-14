@@ -1,4 +1,4 @@
-package io.github.hs96wings.streaming_server.Comment.domain;
+package io.github.hs96wings.streaming_server.comment.domain;
 
 import io.github.hs96wings.streaming_server.member.domain.Member;
 import io.github.hs96wings.streaming_server.video.domain.Video;

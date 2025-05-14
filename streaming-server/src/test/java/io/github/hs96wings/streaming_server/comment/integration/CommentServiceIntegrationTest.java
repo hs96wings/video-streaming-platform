@@ -1,17 +1,15 @@
 package io.github.hs96wings.streaming_server.comment.integration;
 
-import io.github.hs96wings.streaming_server.Comment.domain.Comment;
-import io.github.hs96wings.streaming_server.Comment.dto.CommentResDto;
-import io.github.hs96wings.streaming_server.Comment.dto.CommentSaveReqDto;
-import io.github.hs96wings.streaming_server.Comment.repository.CommentRepository;
-import io.github.hs96wings.streaming_server.Comment.service.CommentService;
+import io.github.hs96wings.streaming_server.comment.domain.Comment;
+import io.github.hs96wings.streaming_server.comment.dto.CommentResDto;
+import io.github.hs96wings.streaming_server.comment.dto.CommentSaveReqDto;
+import io.github.hs96wings.streaming_server.comment.repository.CommentRepository;
+import io.github.hs96wings.streaming_server.comment.service.CommentService;
 import io.github.hs96wings.streaming_server.member.domain.Member;
 import io.github.hs96wings.streaming_server.member.dto.MemberSaveReqDto;
-import io.github.hs96wings.streaming_server.member.repository.MemberRepository;
 import io.github.hs96wings.streaming_server.member.service.MemberService;
 import io.github.hs96wings.streaming_server.video.domain.Video;
 import io.github.hs96wings.streaming_server.video.dto.VideoSaveReqDto;
-import io.github.hs96wings.streaming_server.video.repository.VideoRepository;
 import io.github.hs96wings.streaming_server.video.service.VideoService;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;

@@ -1,6 +1,6 @@
-package io.github.hs96wings.streaming_server.Comment.dto;
+package io.github.hs96wings.streaming_server.comment.dto;
 
-import io.github.hs96wings.streaming_server.Comment.domain.Comment;
+import io.github.hs96wings.streaming_server.comment.domain.Comment;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

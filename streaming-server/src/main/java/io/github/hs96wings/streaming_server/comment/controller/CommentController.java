@@ -1,8 +1,8 @@
-package io.github.hs96wings.streaming_server.Comment.controller;
+package io.github.hs96wings.streaming_server.comment.controller;
 
-import io.github.hs96wings.streaming_server.Comment.dto.CommentResDto;
-import io.github.hs96wings.streaming_server.Comment.dto.CommentSaveReqDto;
-import io.github.hs96wings.streaming_server.Comment.service.CommentService;
+import io.github.hs96wings.streaming_server.comment.dto.CommentResDto;
+import io.github.hs96wings.streaming_server.comment.dto.CommentSaveReqDto;
+import io.github.hs96wings.streaming_server.comment.service.CommentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

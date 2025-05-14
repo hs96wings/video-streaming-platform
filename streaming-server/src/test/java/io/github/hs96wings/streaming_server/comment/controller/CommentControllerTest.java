@@ -2,14 +2,9 @@ package io.github.hs96wings.streaming_server.comment.controller;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.hs96wings.streaming_server.Comment.controller.CommentController;
-import io.github.hs96wings.streaming_server.Comment.domain.Comment;
-import io.github.hs96wings.streaming_server.Comment.dto.CommentResDto;
-import io.github.hs96wings.streaming_server.Comment.dto.CommentSaveReqDto;
-import io.github.hs96wings.streaming_server.Comment.service.CommentService;
-import io.github.hs96wings.streaming_server.member.domain.Member;
-import io.github.hs96wings.streaming_server.video.domain.Video;
-import io.github.hs96wings.streaming_server.video.domain.VideoStatus;
+import io.github.hs96wings.streaming_server.comment.dto.CommentResDto;
+import io.github.hs96wings.streaming_server.comment.dto.CommentSaveReqDto;
+import io.github.hs96wings.streaming_server.comment.service.CommentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
