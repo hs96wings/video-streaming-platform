@@ -29,31 +29,32 @@
     </v-container>
 </template>
 
-<script>
+<script setup>
 import axios from 'axios'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
-export default {
-    data() {
-        return {
-            title: "",
-            description: "",
-            file: null
-        }
-    },
-    methods: {
-        onFileChange(e) {
-            this.file = e.target.files[0]
-        },
-        async upload() {
-            const formData = new FormData()
-            formData.append("title", this.title)
-            formData.append("description", this.description)
-            formData.append("file", this.file)
+const router = useRouter()
 
-            await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/video/upload`, formData)
-            .then(() => this.$router.push('/admin'))
-            .catch(err => console.log(`업로드 실패: ${err.response.data} ${formData}`))
-        }
+const title = ref('')
+const description = ref('')
+const file = ref(null)
+
+function onFileChange(e) {
+    file.value = e.target.files[0]
+}
+
+async function upload() {
+    const formData = new FormData()
+    formData.append("title", title.value)
+    formData.append("description", description.value)
+    formData.append("file", file.value)
+
+    try {
+        await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/video/upload`, formData)
+        router.push('/admin')
+    } catch (err) {
+        console.log(`업로드 실패: ${err.response.data} ${formData}`)
     }
 }
 </script>

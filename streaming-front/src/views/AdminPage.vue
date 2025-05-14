@@ -16,7 +16,7 @@
                 <td>{{ video.id }}</td>
                 <td @click="goToVideo(video.id)">{{ video.title }}</td>
                 <td>{{ video.description }}</td>
-                <td>{{ video.uploadedAt.slice(0, 19).replace('T', ' ') }}</td>
+                <td>{{ formatDate(video.uploadedAt) }}</td>
                 <td v-if="video.videoStatus == 'READY'" class="text-green-darken-2">● {{ video.videoStatus }}</td>
                 <td v-else-if="video.videoStatus == 'PROCESSING'" class="text-yellow-darken-2">● {{ video.videoStatus }}</td>
                 <td v-else class="text-red-darken-3">● {{ video.videoStatus }}</td>
@@ -27,26 +27,29 @@
     </v-table>
 </template>
 
-<script>
+<script setup>
+import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
 import axios from 'axios'
-export default {
-    data() {
-        return {
-            videoList: [],
-        }
-    },
-    async created() {
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/video/admin`);
-        this.videoList = response.data;
-    },
-    methods: {
-        goToVideo(id) {
-            this.$router.push(`/video/${id}`);
-        },
-        async deleteVideo(id) {
-            await axios.delete(`${process.env.VUE_APP_API_BASE_URL}/api/video/${id}`)
-            this.videoList = this.videoList.filter(v => v.id !== id)
-        }
-    }
+
+const router = useRouter()
+const videoList = ref([])
+
+function formatDate(datetime) {
+    return datetime.slice(0, 19).replace('T', ' ')
+}
+
+onMounted(async () => {
+    const { data } = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/video/admin`);
+    videoList.value = data
+})
+
+function goToVideo(id) {
+    router.push(`/video/${id}`)
+}
+
+async function deleteVideo(id) {
+    await axios.delete(`${process.env.VUE_APP_API_BASE_URL}/api/video/${id}`)
+    videoList.value = videoList.value.filter(v => v.id !== id)
 }
 </script>

@@ -9,14 +9,12 @@
                             <v-text-field
                                 label="아이디"
                                 v-model="userid"
-                                required>
-                            </v-text-field>
+                                required />
                             <v-text-field
                                 label="비밀번호"
                                 v-model="password"
                                 type="password"
-                                required>
-                            </v-text-field>
+                                required />
                             <v-btn type="submit" color="primary" block>로그인</v-btn>
                         </v-form>
                     </v-card-text>
@@ -26,25 +24,22 @@
     </v-container>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue'
 import axios from 'axios'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
-export default {
-    data() {
-        return {
-            userid: "",
-            password: ""
-        }
-    },
-    methods: {
-        async doLogin() {
-            const loginData = { userid: this.userid, password: this.password }
-            const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/member/doLogin`, loginData)
-            const token = response.data.token
-            localStorage.setItem("token", token)
-            this.$router.push("/");
-        }
-    }
+const userid = ref('')
+const password = ref('')
+const router = useRouter()
+const auth = useAuthStore()
+
+async function doLogin() {
+    const loginData = { userid: userid.value, password: password.value }
+    const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/member/doLogin`, loginData)
+    auth.updateAuthState(response.data.token)
+    router.push('/')
 }
 
 </script>

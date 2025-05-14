@@ -37,7 +37,7 @@
                             <tr v-for="comment in comments" :key="comment.id">
                                 <td>{{ comment.authorName }}</td>
                                 <td>{{ comment.content }}</td>
-                                <td>{{ comment.createdAt.slice(0,19).replace('T',' ') }}</td>
+                                <td>{{ formatDate(comment.createdAt) }}</td>
                                 <td><v-btn v-if="comment.authorName === username" @click="deleteComment(comment.id)">삭제</v-btn></td>
                             </tr>
                         </tbody>
@@ -48,70 +48,76 @@
     </v-container>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import Hls from 'hls.js'
+import { useAuthStore } from '@/stores/auth'
 
-export default {
-    props: {
-        username: {
-            type: String,
-            default: '',
-            required: true
-        }
-    },
-    data() {
-        return {
-            id: this.$route.params.id,
-            title: "",
-            videoPath: "",
-            description: "",
-            uploadedAt: "",
-            comments: [],
-            newComment: ''
-        }
-    },
-    async created() {
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/video/${this.id}`)
-        const comment_res = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/comment/${this.id}`)
-        this.title = response.data.title;
-        this.videoPath = response.data.videoPath;
-        this.description = response.data.description;
-        this.comments = comment_res.data;
+const auth = useAuthStore()
+const username = auth.username
 
-        const video = this.$refs.hlsPlayer;
-        // safari (iOS)에서는 네이티브 재생
-        if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = this.videoPath;
-        } else if (Hls.isSupported()) {
-            // 그 외 브라우저에는 Hls.js로 붙여주기
-            const hls = new Hls();
-            hls.loadSource(this.videoPath);
-            hls.attachMedia(video);
-            hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                video.play();
-            })
-        }
-    },
-    methods: {
-        async fetchComments() {
-            const { data } = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/comment/${this.id}`)
-            this.comments = data
-        },
-        goToBack() {
-            this.$router.push("/list");
-        },
-        async deleteComment(id) {
-            await axios.delete(`${process.env.VUE_APP_API_BASE_URL}/api/comment/${id}`)
-            this.fetchComments()
-        },
-        async postComment() {
-            await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/comment`,
-                { videoId: this.$route.params.id, content: this.newComment }
-            )
-            this.newComment = ''
-            this.fetchComments()
-        }
-    }
+const route = useRoute()
+const router = useRouter()
+
+const id = route.params.id
+const title = ref('')
+const videoPath = ref('')
+const description = ref('')
+const comments = ref([])
+const newComment = ref('')
+const hlsPlayer = ref(null)
+
+function formatDate(datetime) {
+    return datetime.slice(0, 19).replace('T', ' ')
 }
+
+async function fetchVideoAndComments() {
+    const res = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/video/${id}`)
+    const commentRes = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/comment/${id}`)
+    title.value = res.data.title
+    videoPath.value = res.data.videoPath
+    description.value = res.data.description
+    comments.value = commentRes.data
+}
+
+async function postComment() {
+    await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/comment`, {
+        videoId: id,
+        content: newComment.value
+    })
+    newComment.value = ''
+    fetchComments()
+}
+
+async function deleteComment(commentId) {
+    await axios.delete(`${process.env.VUE_APP_API_BASE_URL}/api/comment/${commentId}`)
+    fetchComments()
+}
+
+async function fetchComments() {
+    const { data } = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/comment/${id}`)
+    comments.value = data
+}
+
+function goToBack() {
+    router.push('/list')
+}
+
+onMounted(async () => {
+    await fetchVideoAndComments()
+
+    const video = hlsPlayer.value
+    if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = videoPath.value
+    } else if (Hls.isSupported()) {
+        const hls = new Hls()
+        hls.loadSource(videoPath.value)
+        hls.attachMedia(video)
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            video.play()
+        })
+    }
+})
 </script>

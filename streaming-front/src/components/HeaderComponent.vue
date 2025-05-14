@@ -19,25 +19,22 @@
     </v-app-bar>
 </template>
 
-<script>
-export default {
-    props: {
-        isLogin: {
-            type: Boolean,
-            default: false,
-            required: true
-        },
-        isAdmin: {
-            type: Boolean,
-            default: false,
-            required: true
-        }
-    },
-    emits: ['logout'],
-    methods: {
-        doLogout() {
-            this.$emit('logout');
-        }
-    }
+<script setup>
+import { useAuthStore } from '@/stores/auth';
+import { computed } from 'vue';
+import { useRouter } from 'vue-router';
+
+// 1. Pinia 스토어 불러오기
+const auth = useAuthStore()
+const router = useRouter()
+
+// 2. computed로 로그인/관리자 여부 가져오기
+const isLogin = computed(() => auth.isLogin)
+const isAdmin = computed(() => auth.isAdmin)
+
+// 3. 로그아웃 시 스토어 액션 호출
+function doLogout() {
+    auth.logout()
+    router.push('/')
 }
 </script>

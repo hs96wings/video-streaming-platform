@@ -20,48 +20,37 @@
     </v-container>
 </template>
 
-<script>
+<script setup>
 import axios from 'axios'
 import VideoCard from '@/components/VideoCard.vue'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
-export default {
-    name: 'VideoList',
-    components: { VideoCard },
-    props: {
-        isLogin: {
-            type: Boolean,
-            default: false,
-            required: true
-        },
-    },
-    data() {
-        return {
-            videoList: [],
-            searchKeyword: "",
+const router = useRouter()
+const videoList = ref([])
+const searchKeyword = ref('')
+
+onMounted(async () => {
+    const { data } = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/video/list`);
+    videoList.value = data
+})
+
+function goToVideo(id) {
+    router.push(`/video/${id}`)
+}
+
+async function searchVideos() {
+    try {
+        if (searchKeyword.value.trim() === "") {
+            const { data } = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/video/list`);
+            videoList.value = data
+        } else {
+            const { data } = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/video/search?title=${searchKeyword.value}`)
+            videoList.value = data
         }
-    },
-    async created() {
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/video/list`);
-        this.videoList = response.data;
-    },
-    methods: {
-        goToVideo(id) {
-            this.$router.push(`/video/${id}`);
-        },
-        async searchVideos() {
-            try {
-                if (this.searchKeyword.trim === "") {
-                    const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/video/list`);
-                    this.videoList = response.data;
-                } else {
-                    const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/video/search?title=${this.searchKeyword}`)
-                    this.videoList = response.data;
-                }
-            } catch (err) {
-                alert("검색 중 오류가 발생했습니다");
-                console.error(err);
-            }
-        }
+    } catch (err) {
+        alert("검색 중 오류가 발생했습니다")
+        console.error(err)
     }
 }
 </script>
