@@ -44,7 +44,7 @@ public class VideoServiceIntegrationTest {
     private VideoSaveReqDto videoSaveReqDto;
     private VideoModifyReqDto videoModifyReqDto;
 
-    private static final Logger log = LoggerFactory.getLogger(MemberServiceIntegrationTest.class);
+    private static final Logger log = LoggerFactory.getLogger(VideoServiceIntegrationTest.class);
 
     @BeforeEach
     void setUp() {
