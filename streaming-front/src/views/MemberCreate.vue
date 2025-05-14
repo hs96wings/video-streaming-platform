@@ -40,7 +40,7 @@ const auth = useAuthStore()
 async function create() {
     const createData = { userid: userid.value, password: password.value }
     const res = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/member/create`, createData)
-    auth.updateAuthState(res.data.token) // spring에서 member.getId()와 HttpStatus.CREATED만 보내주기에 token이 없다 수정 필요
-    router.push('/login')
+    auth.updateAuthState(res.data.token)
+    router.push('/')
 }
 </script>

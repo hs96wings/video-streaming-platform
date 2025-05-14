@@ -29,18 +29,26 @@ public class MemberController {
     @PostMapping("/create")
     public ResponseEntity<?> memberCreate(@RequestBody MemberSaveReqDto memberSaveReqDto) {
         Member member = memberService.create(memberSaveReqDto);
-        return new ResponseEntity<>(member.getId(), HttpStatus.CREATED);
+
+        Map<String, Object> loginInfo = getLoginInfo(member);
+
+        return new ResponseEntity<>(loginInfo, HttpStatus.CREATED);
     }
 
     @PostMapping("/doLogin")
     public ResponseEntity<?> doLogin(@RequestBody MemberLoginReqDto memberLoginReqDto) {
         Member member = memberService.login(memberLoginReqDto);
 
+        Map<String, Object> loginInfo = getLoginInfo(member);
+
+        return new ResponseEntity<>(loginInfo, HttpStatus.OK);
+    }
+
+    private Map<String, Object> getLoginInfo(Member member) {
         String jwtToken = jwtTokenProvider.createToken(member.getUserid(), member.getRole().toString());
         Map<String, Object> loginInfo = new HashMap<>();
         loginInfo.put("id", member.getId());
         loginInfo.put("token", jwtToken);
-
-        return new ResponseEntity<>(loginInfo, HttpStatus.OK);
+        return loginInfo;
     }
 }
