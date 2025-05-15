@@ -1,27 +1,15 @@
 package io.github.hs96wings.streaming_server.chat.controller;
 
-import io.github.hs96wings.streaming_server.chat.dto.ChatMessageReqDto;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessageSendingOperations;
-import org.springframework.stereotype.Controller;
+import io.github.hs96wings.streaming_server.chat.service.ChatService;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-@Controller
+@RestController
+@RequestMapping("/chat")
 public class ChatController {
-    private static final Logger log = LoggerFactory.getLogger(ChatController.class);
-    private final SimpMessageSendingOperations messageTemplate;
+    private final ChatService chatService;
 
-    public ChatController(SimpMessageSendingOperations messageTemplate) {
-        this.messageTemplate = messageTemplate;
-    }
-
-    @MessageMapping("/{roomId}")
-    public void sendMessage(@DestinationVariable("roomId") Long roomId, ChatMessageReqDto chatMessageReqDto) {
-        log.debug(chatMessageReqDto.getMessage());
-        messageTemplate.convertAndSend("/topic/" + roomId, chatMessageReqDto);
+    public ChatController(ChatService chatService) {
+        this.chatService = chatService;
     }
 }

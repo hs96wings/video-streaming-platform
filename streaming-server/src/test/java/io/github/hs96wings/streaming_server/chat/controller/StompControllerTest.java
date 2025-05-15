@@ -12,9 +12,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-public class ChatControllerTest {
+public class StompControllerTest {
     @InjectMocks
-    private ChatController chatController;
+    private StompController stompController;
     @Mock
     private SimpMessagingTemplate messagingTemplate;
 
@@ -26,7 +26,7 @@ public class ChatControllerTest {
         ChatMessageReqDto dto = new ChatMessageReqDto("user1", "야호");
 
         // when
-        chatController.sendMessage(roomId, dto);
+        stompController.sendMessage(roomId, dto);
 
         // then
         verify(messagingTemplate).convertAndSend("/topic/1", dto);
