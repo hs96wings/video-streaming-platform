@@ -1,6 +1,7 @@
 package io.github.hs96wings.streaming_server.chat.controller;
 
 import io.github.hs96wings.streaming_server.chat.dto.ChatMessageReqDto;
+import io.github.hs96wings.streaming_server.chat.service.ChatService;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
@@ -13,14 +14,17 @@ import org.slf4j.LoggerFactory;
 public class StompController {
     private static final Logger log = LoggerFactory.getLogger(StompController.class);
     private final SimpMessageSendingOperations messageTemplate;
+    private final ChatService chatService;
 
-    public StompController(SimpMessageSendingOperations messageTemplate) {
+    public StompController(SimpMessageSendingOperations messageTemplate, ChatService chatService) {
         this.messageTemplate = messageTemplate;
+        this.chatService = chatService;
     }
 
     @MessageMapping("/{roomId}")
     public void sendMessage(@DestinationVariable("roomId") Long roomId, ChatMessageReqDto chatMessageReqDto) {
         log.debug(chatMessageReqDto.getMessage());
+        chatService.saveMessage(roomId, chatMessageReqDto);
         messageTemplate.convertAndSend("/topic/" + roomId, chatMessageReqDto);
     }
 }
