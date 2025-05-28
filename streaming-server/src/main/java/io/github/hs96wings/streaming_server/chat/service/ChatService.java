@@ -12,6 +12,9 @@ import io.github.hs96wings.streaming_server.chat.repository.ReadStatusRepository
 import io.github.hs96wings.streaming_server.member.domain.Member;
 import io.github.hs96wings.streaming_server.member.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +28,8 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final ReadStatusRepository readStatusRepository;
     private final MemberRepository memberRepository;
+
+    private static final Logger log = LoggerFactory.getLogger(ChatService.class);
 
     public ChatService(ChatRoomRepository chatRoomRepository, ChatParticipantRepository chatParticipantRepository, ChatMessageRepository chatMessageRepository, ReadStatusRepository readStatusRepository, MemberRepository memberRepository) {
         this.chatRoomRepository = chatRoomRepository;
@@ -63,5 +68,24 @@ public class ChatService {
                     .build();
             readStatusRepository.save(readStatus);
         }
+    }
+
+    public void createGroupRoom(String roomName) {
+        Member member = memberRepository.findByUserid(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new EntityNotFoundException("member cannot be found"));
+
+        // 채팅방 생성
+        ChatRoom chatRoom = ChatRoom.builder()
+                .name(roomName)
+                .isGroupChat("Y")
+                .build();
+        chatRoomRepository.save(chatRoom);
+
+        // 채팅 참여자로 채팅 개설자 추가
+        ChatParticipant chatParticipant = ChatParticipant.builder()
+                .chatRoom(chatRoom)
+                .member(member)
+                .build();
+        chatParticipantRepository.save(chatParticipant);
     }
 }
