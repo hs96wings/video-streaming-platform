@@ -2,6 +2,7 @@ package io.github.hs96wings.streaming_server.chat.controller;
 
 import io.github.hs96wings.streaming_server.chat.dto.ChatMessageDto;
 import io.github.hs96wings.streaming_server.chat.dto.ChatRoomListResDto;
+import io.github.hs96wings.streaming_server.chat.dto.MyChatListResDto;
 import io.github.hs96wings.streaming_server.chat.service.ChatService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -52,5 +53,12 @@ public class ChatController {
     public ResponseEntity<?> messageRead(@PathVariable(name = "roomId") Long roomId) {
         chatService.messageRead(roomId);
         return ResponseEntity.ok().build();
+    }
+
+    // 내 채팅방 목록 조회: roomId, roomName, isGroupChat, 메시지 읽음 개수
+    @GetMapping("/my/rooms")
+    public ResponseEntity<?> getMyChatRooms() {
+        List<MyChatListResDto> myChatListResDtos = chatService.getMyChatRooms();
+        return new ResponseEntity<>(myChatListResDtos, HttpStatus.OK);
     }
 }

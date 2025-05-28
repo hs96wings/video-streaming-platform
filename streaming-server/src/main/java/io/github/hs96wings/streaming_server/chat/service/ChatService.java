@@ -6,6 +6,7 @@ import io.github.hs96wings.streaming_server.chat.domain.ChatRoom;
 import io.github.hs96wings.streaming_server.chat.domain.ReadStatus;
 import io.github.hs96wings.streaming_server.chat.dto.ChatMessageDto;
 import io.github.hs96wings.streaming_server.chat.dto.ChatRoomListResDto;
+import io.github.hs96wings.streaming_server.chat.dto.MyChatListResDto;
 import io.github.hs96wings.streaming_server.chat.repository.ChatMessageRepository;
 import io.github.hs96wings.streaming_server.chat.repository.ChatParticipantRepository;
 import io.github.hs96wings.streaming_server.chat.repository.ChatRoomRepository;
@@ -172,5 +173,24 @@ public class ChatService {
         for (ReadStatus r : readStatuses) {
             r.updateIsRead(true);
         }
+    }
+
+    public List<MyChatListResDto> getMyChatRooms() {
+        Member member = memberRepository.findByUserid(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 유저입니다"));
+        List<ChatParticipant> chatParticipants = chatParticipantRepository.findAllByMember(member);
+        List<MyChatListResDto> chatListResDtos = new ArrayList<>();
+
+        for (ChatParticipant c : chatParticipants) {
+            Long count = readStatusRepository.countByChatParticipantAndIsReadFalse(c);
+            MyChatListResDto dto = MyChatListResDto.builder()
+                    .roomId(c.getChatRoom().getId())
+                    .roomName(c.getChatRoom().getName())
+                    .isGroupChat(c.getChatRoom().getIsGroupChat())
+                    .unReadCount(count)
+                    .build();
+            chatListResDtos.add(dto);
+        }
+        return chatListResDtos;
     }
 }
