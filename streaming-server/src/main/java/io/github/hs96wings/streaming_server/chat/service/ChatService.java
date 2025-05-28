@@ -193,4 +193,24 @@ public class ChatService {
         }
         return chatListResDtos;
     }
+
+    public void leaveGroupChat(Long roomId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 채팅방입니다"));
+        Member member = memberRepository.findByUserid(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 유저입니다"));
+
+        if(chatRoom.getIsGroupChat().equals("N")) {
+            throw new IllegalArgumentException("단체 채팅방이 아닙니다");
+        }
+
+        ChatParticipant c = chatParticipantRepository.findByChatRoomAndMember(chatRoom, member)
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 참여자입니다"));
+        chatParticipantRepository.delete(c);
+
+        List<ChatParticipant> chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom);
+        if (chatParticipants.isEmpty()) {
+            chatRoomRepository.delete(chatRoom);
+        }
+    }
 }
