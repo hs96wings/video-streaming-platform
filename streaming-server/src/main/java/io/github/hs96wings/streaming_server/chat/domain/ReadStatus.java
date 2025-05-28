@@ -28,4 +28,8 @@ public class ReadStatus extends BaseTimeEntity {
     private ChatMessage chatMessage;
     @Column(nullable = false)
     private Boolean isRead;
+
+    public void updateIsRead(boolean isRead) {
+        this.isRead = isRead;
+    }
 }
