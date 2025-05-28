@@ -1,5 +1,6 @@
 package io.github.hs96wings.streaming_server.chat.controller;
 
+import io.github.hs96wings.streaming_server.chat.dto.ChatMessageDto;
 import io.github.hs96wings.streaming_server.chat.dto.ChatRoomListResDto;
 import io.github.hs96wings.streaming_server.chat.service.ChatService;
 import org.springframework.http.HttpStatus;
@@ -37,5 +38,12 @@ public class ChatController {
     public ResponseEntity<?> joinGroupChatRoom(@PathVariable(name = "roomId") Long roomId) {
         chatService.addParticipantToGroupChat(roomId);
         return ResponseEntity.ok().build();
+    }
+
+    // 이전 메시지 조회
+    @GetMapping("/history/{roomId}")
+    public ResponseEntity<?> getChatHistory(@PathVariable(name = "roomId") Long roomId) {
+        List<ChatMessageDto> chatMessageDtos = chatService.getChatHistory(roomId);
+        return new ResponseEntity<>(chatMessageDtos, HttpStatus.OK);
     }
 }

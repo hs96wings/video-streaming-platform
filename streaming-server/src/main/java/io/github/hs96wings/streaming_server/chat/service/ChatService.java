@@ -4,7 +4,7 @@ import io.github.hs96wings.streaming_server.chat.domain.ChatMessage;
 import io.github.hs96wings.streaming_server.chat.domain.ChatParticipant;
 import io.github.hs96wings.streaming_server.chat.domain.ChatRoom;
 import io.github.hs96wings.streaming_server.chat.domain.ReadStatus;
-import io.github.hs96wings.streaming_server.chat.dto.ChatMessageReqDto;
+import io.github.hs96wings.streaming_server.chat.dto.ChatMessageDto;
 import io.github.hs96wings.streaming_server.chat.dto.ChatRoomListResDto;
 import io.github.hs96wings.streaming_server.chat.repository.ChatMessageRepository;
 import io.github.hs96wings.streaming_server.chat.repository.ChatParticipantRepository;
@@ -43,20 +43,20 @@ public class ChatService {
         this.memberRepository = memberRepository;
     }
 
-    public void saveMessage(Long roomId, ChatMessageReqDto chatMessageReqDto) {
+    public void saveMessage(Long roomId, ChatMessageDto chatMessageDto) {
         // 채팅방 조회
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new EntityNotFoundException("방을 찾을 수 없습니다"));
 
         // 보낸 사람 조회
-        Member sender = memberRepository.findByUserid(chatMessageReqDto.getSenderUserid())
+        Member sender = memberRepository.findByUserid(chatMessageDto.getSenderUserid())
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다"));
 
         // 메시지 저장
         ChatMessage chatMessage = ChatMessage.builder()
                 .chatRoom(chatRoom)
                 .member(sender)
-                .message(chatMessageReqDto.getMessage())
+                .message(chatMessageDto.getMessage())
                 .build();
         chatMessageRepository.save(chatMessage);
 
@@ -121,5 +121,41 @@ public class ChatService {
                 .member(member)
                 .build();
         chatParticipantRepository.save(chatParticipant);
+    }
+
+    public List<ChatMessageDto> getChatHistory(Long roomId) {
+        // 해당 채팅방에 참여자가 아닐 경우 에러
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 채팅방입니다"));
+        Member member = memberRepository.findByUserid(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 유저입니다"));
+        List<ChatParticipant> chatParticipants = chatRoom.getChatParticipants();
+        boolean check = false;
+
+        for (ChatParticipant c : chatParticipants) {
+            if (c.getMember().equals(member))
+                check = true;
+        }
+
+        if (!check) throw new IllegalArgumentException("본인이 속하지 않은 채팅방입니다");
+
+        // 특정 roomId에 대한 message 조회
+        return chatMessageRepository.findByChatRoomOrderByCreatedAtAsc(chatRoom).stream()
+                        .map(ChatMessageDto::from)
+                        .collect(Collectors.toList());
+    }
+
+    public boolean isRoomParticipant(String userId, Long roomId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 채팅방입니다"));
+        Member member = memberRepository.findByUserid(userId)
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 유저입니다"));
+        List<ChatParticipant> chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom);
+
+        for (ChatParticipant c : chatParticipants) {
+            if (c.getMember().equals(member))
+                return true;
+        }
+        return false;
     }
 }

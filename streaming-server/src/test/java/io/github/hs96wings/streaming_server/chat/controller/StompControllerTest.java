@@ -1,6 +1,6 @@
 package io.github.hs96wings.streaming_server.chat.controller;
 
-import io.github.hs96wings.streaming_server.chat.dto.ChatMessageReqDto;
+import io.github.hs96wings.streaming_server.chat.dto.ChatMessageDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +23,7 @@ public class StompControllerTest {
     void sendMessage_shouldSendToCorrectTopic() {
         // given
         Long roomId = 1L;
-        ChatMessageReqDto dto = new ChatMessageReqDto("user1", "야호");
+        ChatMessageDto dto = new ChatMessageDto("user1", "야호");
 
         // when
         stompController.sendMessage(roomId, dto);

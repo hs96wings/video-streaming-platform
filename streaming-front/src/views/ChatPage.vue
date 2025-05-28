@@ -26,12 +26,13 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onBeforeUnmount } from 'vue'
+import { ref, nextTick, onBeforeUnmount, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import SockJS from 'sockjs-client'
 import { Client } from '@stomp/stompjs'
 import { useAuthStore } from '@/stores/auth';
 import { onBeforeRouteLeave } from 'vue-router';
+import axios from 'axios';
 
 const auth = useAuthStore()
 const route = useRoute()
@@ -41,8 +42,6 @@ const messages = ref([])
 const newMessage = ref('')
 const chatBox = ref(null)
 const roomId = ref(route.params.roomId)
-console.log(roomId.value)
-
 
 // 1. STOMP 클라이언트 생성
 const stompClient = new Client({
@@ -60,10 +59,17 @@ stompClient.onConnect = () => {
         const parseMessage = JSON.parse(message.body)
         messages.value.push(parseMessage)
         scrollToBottom()
+    }, {
+        'Authorization': `Bearer ${token}`
     })
 }
 
 stompClient.activate()
+
+onMounted(async () => {
+    const { data } = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/chat/history/${roomId.value}`);
+    messages.value = data
+})
 
 function sendMessage() {
     if (newMessage.value.trim() === "") return

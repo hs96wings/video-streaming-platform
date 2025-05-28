@@ -1,6 +1,6 @@
 package io.github.hs96wings.streaming_server.chat.controller;
 
-import io.github.hs96wings.streaming_server.chat.dto.ChatMessageReqDto;
+import io.github.hs96wings.streaming_server.chat.dto.ChatMessageDto;
 import io.github.hs96wings.streaming_server.chat.service.ChatService;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -22,9 +22,9 @@ public class StompController {
     }
 
     @MessageMapping("/{roomId}")
-    public void sendMessage(@DestinationVariable("roomId") Long roomId, ChatMessageReqDto chatMessageReqDto) {
-        log.debug(chatMessageReqDto.getMessage());
-        chatService.saveMessage(roomId, chatMessageReqDto);
-        messageTemplate.convertAndSend("/topic/" + roomId, chatMessageReqDto);
+    public void sendMessage(@DestinationVariable("roomId") Long roomId, ChatMessageDto chatMessageDto) {
+        log.debug(chatMessageDto.getMessage());
+        chatService.saveMessage(roomId, chatMessageDto);
+        messageTemplate.convertAndSend("/topic/" + roomId, chatMessageDto);
     }
 }
