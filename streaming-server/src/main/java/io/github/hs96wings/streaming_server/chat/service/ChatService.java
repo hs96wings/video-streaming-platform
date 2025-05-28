@@ -5,6 +5,7 @@ import io.github.hs96wings.streaming_server.chat.domain.ChatParticipant;
 import io.github.hs96wings.streaming_server.chat.domain.ChatRoom;
 import io.github.hs96wings.streaming_server.chat.domain.ReadStatus;
 import io.github.hs96wings.streaming_server.chat.dto.ChatMessageReqDto;
+import io.github.hs96wings.streaming_server.chat.dto.ChatRoomListResDto;
 import io.github.hs96wings.streaming_server.chat.repository.ChatMessageRepository;
 import io.github.hs96wings.streaming_server.chat.repository.ChatParticipantRepository;
 import io.github.hs96wings.streaming_server.chat.repository.ChatRoomRepository;
@@ -18,7 +19,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -87,5 +90,11 @@ public class ChatService {
                 .member(member)
                 .build();
         chatParticipantRepository.save(chatParticipant);
+    }
+
+    public List<ChatRoomListResDto> getGroupChatList() {
+        return chatRoomRepository.findByIsGroupChat("Y").stream()
+                .map(ChatRoomListResDto::from)
+                .collect(Collectors.toList());
     }
 }
