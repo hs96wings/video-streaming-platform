@@ -8,7 +8,9 @@ import VideoDetail from '@/views/VideoDetail.vue'
 import AdminPage from '@/views/AdminPage.vue'
 import AdminUpdatePage from "@/views/AdminUpdatePage.vue"
 import ChatPage from "@/views/ChatPage.vue"
+import GroupChatList from "@/views/GroupChatList.vue"
 
+import { useAuthStore } from "@/stores/auth"
 import { jwtDecode } from 'jwt-decode'
 
 const routes = [
@@ -20,7 +22,8 @@ const routes = [
     { path: '/video/:id', name: 'VideoDetail', component: VideoDetail },
     { path: '/admin', name: 'AdminPage', component: AdminPage, meta: { requireAuth: true, requireAdmin: true }},
     { path: '/update/:id', name: 'AdminUpdatePage', component: AdminUpdatePage, meta: { requireAuth: true, requireAdmin: true }},
-    { path: '/chat', name: 'ChatPage', component: ChatPage }
+    { path: '/chat/:roomId', name: 'ChatPage', component: ChatPage },
+    { path: '/groupchat/list', name: 'GroupChatList', component: GroupChatList, meta: { requireAuth: true }}
 ]
 
 const router = createRouter({
@@ -30,7 +33,8 @@ const router = createRouter({
 
 // 네비게이션 가드
 router.beforeEach((to, from, next) => {
-    const token = localStorage.getItem("token")
+    const auth = useAuthStore()
+    const token = auth.token
 
     if (to.meta.requireAuth) {
         if (!token) {

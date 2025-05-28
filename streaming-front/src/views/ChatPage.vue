@@ -27,17 +27,22 @@
 
 <script setup>
 import { ref, nextTick, onBeforeUnmount } from 'vue'
+import { useRoute } from 'vue-router'
 import SockJS from 'sockjs-client'
 import { Client } from '@stomp/stompjs'
 import { useAuthStore } from '@/stores/auth';
 import { onBeforeRouteLeave } from 'vue-router';
 
 const auth = useAuthStore()
+const route = useRoute()
 const token = auth.token;
 
 const messages = ref([])
 const newMessage = ref('')
 const chatBox = ref(null)
+const roomId = ref(route.params.roomId)
+console.log(roomId.value)
+
 
 // 1. STOMP 클라이언트 생성
 const stompClient = new Client({
@@ -51,7 +56,7 @@ const stompClient = new Client({
 // 3. 연결 후 콜백
 stompClient.onConnect = () => {
     // 구독
-    stompClient.subscribe(`/topic/1`, (message) => {
+    stompClient.subscribe(`/topic/${roomId.value}`, (message) => {
         const parseMessage = JSON.parse(message.body)
         messages.value.push(parseMessage)
         scrollToBottom()
@@ -67,7 +72,7 @@ function sendMessage() {
         message: newMessage.value.trim()
     }
     stompClient.publish({
-        destination: `/publish/1`,
+        destination: `/publish/${roomId.value}`,
         body: JSON.stringify(message)
     })
     newMessage.value = ''
