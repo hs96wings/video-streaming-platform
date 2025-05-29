@@ -224,6 +224,9 @@ public class ChatService {
         Member otherMember = memberRepository.findByUserid(otherMemberUserId)
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 유저입니다"));
 
+        if (member.equals(otherMember))
+            throw new IllegalArgumentException("자기 자신과 채팅할 수 없습니다");
+
         String roomKey = generateRoomKey(member.getId(), otherMember.getId());
 
         return chatRoomRepository.findByRoomKey(roomKey)

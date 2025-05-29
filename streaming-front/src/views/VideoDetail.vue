@@ -35,7 +35,10 @@
                         </thead>
                         <tbody>
                             <tr v-for="comment in comments" :key="comment.id">
-                                <td><v-btn @click="openPrivateChatModal(comment.authorName)">{{ comment.authorName }}</v-btn></td>
+                                <td>
+                                    <span v-if="comment.authorName === username"> {{ comment.authorName }}</span>
+                                    <v-btn v-else @click="openPrivateChatModal(comment.authorName)">{{ comment.authorName }}</v-btn>
+                                </td>
                                 <td>{{ comment.content }}</td>
                                 <td>{{ formatDate(comment.createdAt) }}</td>
                                 <td><v-btn v-if="comment.authorName === username" @click="deleteComment(comment.id)">삭제</v-btn></td>
