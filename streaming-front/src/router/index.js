@@ -9,6 +9,7 @@ import AdminPage from '@/views/AdminPage.vue'
 import AdminUpdatePage from "@/views/AdminUpdatePage.vue"
 import ChatPage from "@/views/ChatPage.vue"
 import GroupChatList from "@/views/GroupChatList.vue"
+import MyChatPage from "@/views/MyChatPage.vue"
 
 import { useAuthStore } from "@/stores/auth"
 import { jwtDecode } from 'jwt-decode'
@@ -23,7 +24,8 @@ const routes = [
     { path: '/admin', name: 'AdminPage', component: AdminPage, meta: { requireAuth: true, requireAdmin: true }},
     { path: '/update/:id', name: 'AdminUpdatePage', component: AdminUpdatePage, meta: { requireAuth: true, requireAdmin: true }},
     { path: '/chat/:roomId', name: 'ChatPage', component: ChatPage },
-    { path: '/groupchat/list', name: 'GroupChatList', component: GroupChatList, meta: { requireAuth: true }}
+    { path: '/groupchat/list', name: 'GroupChatList', component: GroupChatList, meta: { requireAuth: true }},
+    { path: '/my/chat/page', name: 'MyChatPage', component: MyChatPage, meta: { requireAuth: true } }
 ]
 
 const router = createRouter({

@@ -8,6 +8,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+import java.util.ArrayList;
+
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,4 +26,7 @@ public class ChatParticipant extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
+
+    @OneToMany(mappedBy = "chatParticipant", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<ReadStatus> readStatuses = new ArrayList<>();
 }

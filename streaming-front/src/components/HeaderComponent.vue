@@ -11,6 +11,7 @@
                 </v-col>
                 <v-col class="d-flex justify-end">
                     <v-btn v-if="isAdmin" :to="{path: '/admin'}">관리자</v-btn>
+                    <v-btn v-if="isLogin" :to="{path: '/my/chat/page'}">내 채팅 목록</v-btn>
                     <v-btn v-if="!isLogin" :to="{path: '/create'}">회원가입</v-btn>
                     <v-btn v-if="!isLogin" :to="{path: '/login'}">로그인</v-btn>
                     <v-btn v-if="isLogin" @click="doLogout">로그아웃</v-btn>
