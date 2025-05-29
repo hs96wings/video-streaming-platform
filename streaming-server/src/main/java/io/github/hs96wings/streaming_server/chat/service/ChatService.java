@@ -218,13 +218,13 @@ public class ChatService {
         }
     }
 
-    public Long getOrCreatePrivateRoom(Long otherMemberId) {
+    public Long getOrCreatePrivateRoom(String otherMemberUserId) {
         Member member = memberRepository.findByUserid(SecurityContextHolder.getContext().getAuthentication().getName())
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 유저입니다"));
-        Member otherMember = memberRepository.findById(otherMemberId)
+        Member otherMember = memberRepository.findByUserid(otherMemberUserId)
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 유저입니다"));
 
-        String roomKey = generateRoomKey(member.getId(), otherMemberId);
+        String roomKey = generateRoomKey(member.getId(), otherMember.getId());
 
         return chatRoomRepository.findByRoomKey(roomKey)
                 .map(ChatRoom::getId)

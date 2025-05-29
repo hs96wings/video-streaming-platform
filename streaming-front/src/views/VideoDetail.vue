@@ -35,7 +35,7 @@
                         </thead>
                         <tbody>
                             <tr v-for="comment in comments" :key="comment.id">
-                                <td>{{ comment.authorName }}</td>
+                                <td><v-btn @click="openPrivateChatModal(comment.authorName)">{{ comment.authorName }}</v-btn></td>
                                 <td>{{ comment.content }}</td>
                                 <td>{{ formatDate(comment.createdAt) }}</td>
                                 <td><v-btn v-if="comment.authorName === username" @click="deleteComment(comment.id)">삭제</v-btn></td>
@@ -45,6 +45,20 @@
                 </v-card>
             </v-col>
         </v-row>
+        <v-dialog v-model="showCreatePrivateRoomModal" max-width="500px">
+            <v-card>
+                <v-card-title class="text-h6">
+                    1:1 채팅방 생성
+                </v-card-title>
+                <v-card-text>
+                    채팅방을 생성하시겠습니까?
+                </v-card-text>
+                <v-card-actions>
+                    <v-btn color="grey" @click="showCreatePrivateRoomModal = false">취소</v-btn>
+                    <v-btn color="primary" @click="createPrivateChatRoom">생성</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </v-container>
 </template>
 
@@ -68,6 +82,8 @@ const description = ref('')
 const comments = ref([])
 const newComment = ref('')
 const hlsPlayer = ref(null)
+const showCreatePrivateRoomModal = ref(false)
+const targetUserId = ref('')
 
 function formatDate(datetime) {
     return datetime.slice(0, 19).replace('T', ' ')
@@ -120,4 +136,15 @@ onMounted(async () => {
         })
     }
 })
+
+function openPrivateChatModal(userId) {
+    targetUserId.value = userId
+    showCreatePrivateRoomModal.value = true
+}
+
+async function createPrivateChatRoom() {
+    const { data } = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/chat/room/private/create?otherMemberUserId=${targetUserId.value}`)
+    router.push(`/chat/${data}`)
+}
+
 </script>
