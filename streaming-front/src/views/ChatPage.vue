@@ -92,11 +92,13 @@ function scrollToBottom() {
     })
 }
 
-onBeforeUnmount(() => {
+onBeforeUnmount(async () => {
+    await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/chat/room/${roomId.value}/read`)
     stompClient.deactivate()
 })
 
-onBeforeRouteLeave((to, from, next) => {
+onBeforeRouteLeave(async (to, from, next) => {
+    await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/chat/room/${roomId.value}/read`)
     stompClient.deactivate()
     next()
 })
