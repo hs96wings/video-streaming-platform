@@ -16,6 +16,7 @@ import io.github.hs96wings.streaming_server.member.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -223,22 +224,32 @@ public class ChatService {
         Member otherMember = memberRepository.findById(otherMemberId)
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 유저입니다"));
 
-        // 나와 상대방이 1:1 채팅에 이미 참여하고 있다면 해당 roomId return
-        Optional<ChatRoom> chatRoom = chatParticipantRepository.findExistingPrivateRoom(member.getId(), otherMember.getId());
-        if (chatRoom.isPresent()) {
-            return chatRoom.get().getId();
-        }
+        String roomKey = generateRoomKey(member.getId(), otherMemberId);
 
-        // 1:1 채팅이 없을 경우 기존 채팅방 개설
-        ChatRoom newRoom = ChatRoom.builder()
-                .isGroupChat("N")
-                .name(member.getUserid() + "-" + otherMember.getUserid())
-                .build();
-        chatRoomRepository.save(newRoom);
+        return chatRoomRepository.findByRoomKey(roomKey)
+                .map(ChatRoom::getId)
+                .orElseGet(() -> {
+                    try {
+                        ChatRoom newRoom = ChatRoom.builder()
+                                .isGroupChat("N")
+                                .name(member.getUserid() + "-" + otherMember.getUserid())
+                                .roomKey(roomKey)
+                                .build();
+                        chatRoomRepository.save(newRoom);
+                        addParticipantToRoom(newRoom, member);
+                        addParticipantToRoom(newRoom, otherMember);
 
-        // 두 사람 모두 참여자로 새롭게 추가
-        addParticipantToRoom(newRoom, member);
-        addParticipantToRoom(newRoom, otherMember);
-        return newRoom.getId();
+                        return newRoom.getId();
+                    } catch (DataIntegrityViolationException e) {
+                        // 동시에 생성된 경우
+                        return chatRoomRepository.findByRoomKey(roomKey)
+                                .map(ChatRoom::getId)
+                                .orElseThrow(() -> new RuntimeException("동시성 문제로 채팅방 조회 실패"));
+                    }
+                });
+    }
+
+    private String generateRoomKey(Long myId, Long otherMemberId) {
+        return (myId < otherMemberId) ? myId + "-" + otherMemberId : otherMemberId + "-" + myId;
     }
 }
