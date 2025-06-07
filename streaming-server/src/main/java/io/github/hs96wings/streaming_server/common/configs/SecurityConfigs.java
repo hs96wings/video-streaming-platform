@@ -38,6 +38,7 @@ public class SecurityConfigs {
                         .requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll() // 테스트가 진행되지 않아 추가
                         // 누구나 볼 수 있는 공용 API
                         .requestMatchers(HttpMethod.GET, "/api/video/**", "/api/comment/**").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/api/video/**").permitAll()
                         // 그 외 /api/**는 일단 "인증된 유저"여야 열어 줌
                         .requestMatchers("/api/**").authenticated()
                         // 정적 리소스 등 나머지는 그대로 허용
@@ -49,7 +50,7 @@ public class SecurityConfigs {
     @Bean
     CorsConfigurationSource configurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:8080", "http://43.200.192.246"));
+        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:8080", "http://43.200.192.246", "http://lwasky.site", "https://lwasky.site"));
         configuration.setAllowedMethods(List.of("*"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

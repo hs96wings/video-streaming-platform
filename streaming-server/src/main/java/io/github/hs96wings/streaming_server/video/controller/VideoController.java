@@ -59,9 +59,8 @@ public class VideoController {
         return ResponseEntity.ok(id);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/status")
-    public ResponseEntity<?> modifyVideoStatus(@PathVariable("id") Long id, @RequestParam("status") VideoStatus status, @RequestBody VideoHlsReqDto videoHlsReqDto) {
+    public ResponseEntity<?> modifyVideoStatus(@PathVariable("id") Long id, @RequestParam("status") VideoStatus status, @RequestBody(required = false) VideoHlsReqDto videoHlsReqDto) {
         videoService.updateStatus(id, status, videoHlsReqDto);
 
         return ResponseEntity.ok(id);

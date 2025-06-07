@@ -17,4 +17,4 @@
 ### Etc.
 
 - [Velog](https://velog.io/@hs96wings): 문제 해결은 여기에
-- [Site](http://43.200.192.246/#/)
+- [Site](https://lwasky.site)
