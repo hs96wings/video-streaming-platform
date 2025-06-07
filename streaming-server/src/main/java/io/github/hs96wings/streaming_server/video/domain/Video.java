@@ -1,10 +1,13 @@
 package io.github.hs96wings.streaming_server.video.domain;
 
+import io.github.hs96wings.streaming_server.comment.domain.Comment;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Builder
@@ -29,4 +32,7 @@ public class Video {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private VideoStatus videoStatus = VideoStatus.UPLOADED;
+
+    @OneToMany(mappedBy = "video", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
 }
