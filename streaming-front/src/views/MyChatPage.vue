@@ -39,16 +39,43 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import axios from 'axios'
+import { useNotificationStore } from '@/stores/notificationStore'
 
 const router = useRouter()
 const chatList = ref([])
+const notificationStore = useNotificationStore()
 
 onMounted(async () => {
     const { data } = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/chat/my/rooms`);
     chatList.value = data
+
+    // 컴포넌트 마운트 시 SSE 연결 시도
+    notificationStore.connectSSE()
 })
+
+onUnmounted(() => {
+    notificationStore.disconnectSSE()
+})
+
+// 배열의 변화를 감지
+watch(() => notificationStore.notifications, (newNotification) => {
+    // 새 알림이 도착하면 (배열에 추가될 때마다)
+    if (newNotification.length > 0) {
+        // 마지막으로 추가된 알림을 가져옴 (또는 모든 새 알림을 순회)
+        const lastestNotification = newNotification[newNotification.length - 1]
+
+        // chatList에서 해당 roomId를 가진 채팅방을 찾아 unReadCount 업데이트
+        const targetChat = chatList.value.find(chat => chat.roomId === lastestNotification.roomId)
+        if (targetChat) {
+            targetChat.unReadCount = lastestNotification.unreadCount
+        }
+
+        // 알림을 처리했으면 Pinia 스토어의 notifications 배열에서 해당 알림 제거
+        notificationStore.notifications.pop()
+    }
+}, { deep: true }) // 객체 내부 변화 감지를 위해 deep: true 설정
 
 function enterChatRoom(roomId) {
     router.push(`/chat/${roomId}`)

@@ -11,6 +11,7 @@ import io.github.hs96wings.streaming_server.chat.repository.ChatMessageRepositor
 import io.github.hs96wings.streaming_server.chat.repository.ChatParticipantRepository;
 import io.github.hs96wings.streaming_server.chat.repository.ChatRoomRepository;
 import io.github.hs96wings.streaming_server.chat.repository.ReadStatusRepository;
+import io.github.hs96wings.streaming_server.common.sse.service.SseEmitterService;
 import io.github.hs96wings.streaming_server.member.domain.Member;
 import io.github.hs96wings.streaming_server.member.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -34,15 +35,17 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final ReadStatusRepository readStatusRepository;
     private final MemberRepository memberRepository;
+    private final SseEmitterService sseEmitterService;
 
     private static final Logger log = LoggerFactory.getLogger(ChatService.class);
 
-    public ChatService(ChatRoomRepository chatRoomRepository, ChatParticipantRepository chatParticipantRepository, ChatMessageRepository chatMessageRepository, ReadStatusRepository readStatusRepository, MemberRepository memberRepository) {
+    public ChatService(ChatRoomRepository chatRoomRepository, ChatParticipantRepository chatParticipantRepository, ChatMessageRepository chatMessageRepository, ReadStatusRepository readStatusRepository, MemberRepository memberRepository, SseEmitterService sseEmitterService) {
         this.chatRoomRepository = chatRoomRepository;
         this.chatParticipantRepository = chatParticipantRepository;
         this.chatMessageRepository = chatMessageRepository;
         this.readStatusRepository = readStatusRepository;
         this.memberRepository = memberRepository;
+        this.sseEmitterService = sseEmitterService;
     }
 
     public void saveMessage(Long roomId, ChatMessageDto chatMessageDto) {
@@ -66,13 +69,21 @@ public class ChatService {
         List<ChatParticipant> chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom);
         
         for (ChatParticipant c : chatParticipants) {
+            boolean isSender = c.getMember().equals(sender);
+
             ReadStatus readStatus = ReadStatus.builder()
                     .chatRoom(chatRoom)
                     .chatParticipant(c)
                     .chatMessage(chatMessage)
-                    .isRead(c.getMember().equals(sender))
+                    .isRead(isSender)
                     .build();
             readStatusRepository.save(readStatus);
+
+            if (!isSender) {
+                long unreadCount = readStatusRepository.countByChatParticipantAndIsReadFalse(c);
+                Long targetRoomId = chatRoom.getId();
+                sseEmitterService.send(c.getMember().getId(), targetRoomId, unreadCount);
+            }
         }
     }
 

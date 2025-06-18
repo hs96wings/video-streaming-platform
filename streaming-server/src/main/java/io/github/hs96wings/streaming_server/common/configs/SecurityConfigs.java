@@ -39,6 +39,7 @@ public class SecurityConfigs {
                         // 누구나 볼 수 있는 공용 API
                         .requestMatchers(HttpMethod.GET, "/api/video/**", "/api/comment/**").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/api/video/**").permitAll()
+                        .requestMatchers("/api/sse/**").permitAll()
                         // 그 외 /api/**는 일단 "인증된 유저"여야 열어 줌
                         .requestMatchers("/api/**").authenticated()
                         // 정적 리소스 등 나머지는 그대로 허용
