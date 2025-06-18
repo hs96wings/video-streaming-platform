@@ -38,9 +38,13 @@ const router = useRouter()
 const auth = useAuthStore()
 
 async function create() {
-    const createData = { userid: userid.value, password: password.value }
-    const res = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/member/create`, createData)
-    auth.updateAuthState(res.data.token)
-    router.push('/')
+    try {
+        const createData = { userid: userid.value, password: password.value }
+        const res = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/member/create`, createData)
+        auth.updateAuthState(res.data.token)
+        router.push('/')
+    } catch (error) {
+        console.error("회원가입 실패:", error)
+    }
 }
 </script>

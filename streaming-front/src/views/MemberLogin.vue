@@ -36,10 +36,14 @@ const router = useRouter()
 const auth = useAuthStore()
 
 async function doLogin() {
-    const loginData = { userid: userid.value, password: password.value }
-    const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/member/doLogin`, loginData)
-    auth.updateAuthState(response.data.token)
-    router.push('/')
+    try {
+        const loginData = { userid: userid.value, password: password.value }
+        const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/member/doLogin`, loginData)
+        auth.updateAuthState(response.data.token)
+        router.push('/')
+    } catch (error) {
+        console.error("로그인 실패:", error)
+    }
 }
 
 </script>
