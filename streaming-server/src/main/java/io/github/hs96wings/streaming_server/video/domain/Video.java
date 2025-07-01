@@ -1,5 +1,6 @@
 package io.github.hs96wings.streaming_server.video.domain;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.github.hs96wings.streaming_server.comment.domain.Comment;
 import jakarta.persistence.*;
 import lombok.*;

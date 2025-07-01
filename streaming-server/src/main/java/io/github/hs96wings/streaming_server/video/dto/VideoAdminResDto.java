@@ -17,6 +17,7 @@ public class VideoAdminResDto {
     private String description;
     private LocalDateTime uploadedAt;
     private VideoStatus videoStatus;
+    private Long viewCount;
 
     public VideoAdminResDto(Video video) {
         this.id = video.getId();
@@ -24,5 +25,6 @@ public class VideoAdminResDto {
         this.description = video.getDescription();
         this.uploadedAt = video.getUploadedAt();
         this.videoStatus = video.getVideoStatus();
+        this.viewCount = video.getViewCount();
     }
 }

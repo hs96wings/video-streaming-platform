@@ -144,4 +144,19 @@ public class VideoService {
 
         video.setViewCount(video.getViewCount() + 1);
     }
+
+    public List<VideoResDto> getTopViewedVideos() {
+        return videoRepository.findTop3ByOrderByViewCountDesc()
+                .stream()
+                .map(VideoResDto::new)
+                .collect(Collectors.toList());
+
+    }
+
+    public List<VideoResDto> getLatestVideos() {
+        return videoRepository.findTop3ByOrderByUploadedAtDesc()
+                .stream()
+                .map(VideoResDto::new)
+                .collect(Collectors.toList());
+    }
 }

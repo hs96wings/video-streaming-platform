@@ -1,5 +1,6 @@
 package io.github.hs96wings.streaming_server.comment.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import io.github.hs96wings.streaming_server.member.domain.Member;
 import io.github.hs96wings.streaming_server.video.domain.Video;
 import jakarta.persistence.*;

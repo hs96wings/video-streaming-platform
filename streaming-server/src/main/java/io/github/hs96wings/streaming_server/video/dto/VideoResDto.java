@@ -18,7 +18,7 @@ public class VideoResDto {
     private String videoPath;
     private String thumbnailPath;
     private LocalDateTime uploadedAt;
-    private VideoStatus videoStatus;
+    private Long viewCount;
 
     public VideoResDto(Video video) {
         this.id = video.getId();
@@ -27,6 +27,6 @@ public class VideoResDto {
         this.videoPath = video.getVideoPath();
         this.thumbnailPath = video.getThumbnailPath();
         this.uploadedAt = video.getUploadedAt();
-        this.videoStatus = video.getVideoStatus();
+        this.viewCount = video.getViewCount();
     }
 }

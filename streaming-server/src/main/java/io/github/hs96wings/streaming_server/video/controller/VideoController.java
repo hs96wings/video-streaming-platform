@@ -80,4 +80,16 @@ public class VideoController {
 
         return new ResponseEntity<>(videoAdminResDtos, HttpStatus.OK);
     }
+
+    @GetMapping("/popular")
+    public ResponseEntity<?> getPopularVideos() {
+        List<VideoResDto> videoResDtos = videoService.getTopViewedVideos();
+        return new ResponseEntity<>(videoResDtos, HttpStatus.OK);
+    }
+
+    @GetMapping("/latest")
+    public ResponseEntity<?> getLatestVideos() {
+        List<VideoResDto> videoResDtos = videoService.getLatestVideos();
+        return new ResponseEntity<>(videoResDtos, HttpStatus.OK);
+    }
 }
