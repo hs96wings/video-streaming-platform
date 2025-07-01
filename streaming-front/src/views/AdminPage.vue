@@ -8,6 +8,7 @@
                 <th>내용</th>
                 <th>업로드 날짜</th>
                 <th>상태</th>
+                <th>조회수</th>
                 <th colspan="2">관리 메뉴</th>
             </tr>
         </thead>
@@ -20,6 +21,7 @@
                 <td v-if="video.videoStatus == 'READY'" class="text-green-darken-2">● {{ video.videoStatus }}</td>
                 <td v-else-if="video.videoStatus == 'PROCESSING'" class="text-yellow-darken-2">● {{ video.videoStatus }}</td>
                 <td v-else class="text-red-darken-3">● {{ video.videoStatus }}</td>
+                <td>{{ video.viewCount }}</td>
                 <td><v-btn :to="{path: `/update/${video.id}`}">수정</v-btn></td>
                 <td><v-btn @click="deleteVideo(video.id)">삭제</v-btn></td>
             </tr>
