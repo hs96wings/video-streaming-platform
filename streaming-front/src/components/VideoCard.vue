@@ -6,7 +6,7 @@
             class="white--text align-end"
         ></v-img>
         <v-card-title>{{ video.title }}</v-card-title>
-        <v-card-subtitle>{{ formattedDate }}</v-card-subtitle>
+        <v-card-subtitle>{{ formattedDate }} · 조회수: {{ video.viewCount }}회</v-card-subtitle>
     </v-card>
 </template>
 
