@@ -33,6 +33,9 @@ public class Video {
     @Builder.Default
     private VideoStatus videoStatus = VideoStatus.UPLOADED;
 
+    @Column(nullable = false)
+    private Long viewCount = 0L;
+
     @OneToMany(mappedBy = "video", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 }

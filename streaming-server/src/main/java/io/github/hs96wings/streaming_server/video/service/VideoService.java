@@ -5,6 +5,7 @@ import io.github.hs96wings.streaming_server.video.domain.Video;
 import io.github.hs96wings.streaming_server.video.domain.VideoStatus;
 import io.github.hs96wings.streaming_server.video.dto.*;
 import io.github.hs96wings.streaming_server.video.repository.VideoRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -134,5 +135,13 @@ public class VideoService {
                 .stream()
                 .map(VideoAdminResDto::new)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void increaseViewCount(Long videoId) {
+        Video video = videoRepository.findById(videoId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 영상이 존재하지 않습니다"));
+
+        video.setViewCount(video.getViewCount() + 1);
     }
 }
