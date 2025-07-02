@@ -35,6 +35,7 @@ import { ref, onMounted } from 'vue'
 import VideoCard from '@/components/VideoCard.vue'
 import axios from 'axios'
 import {useRouter} from 'vue-router'
+import { useSnackbarStore } from '@/stores/snackbarStore'
 
 const router = useRouter()
 
@@ -44,6 +45,8 @@ const latestVideos = ref([])
 const isLoadingPopular = ref(true)
 const isLoadingLatest = ref(true)
 
+const snackbarStore = useSnackbarStore()
+
 const loadPopularVideos = async () => {
     isLoadingPopular.value = true
     try {
@@ -51,6 +54,7 @@ const loadPopularVideos = async () => {
         popularVideos.value = data
     } catch (err) {
         console.error("🔥 인기 영상 로딩 실패", err)
+        snackbarStore.showSnackbar("인기 영상 로딩에 실패했습니다", 'warning')
     } finally {
         isLoadingPopular.value = false
     }
@@ -63,6 +67,7 @@ const loadLatestVideos = async () => {
         latestVideos.value = data
     } catch (err) {
         console.error("🆕 최신 영상 로딩 실패", err)
+        snackbarStore.showSnackbar("최신 영상 로딩에 실패했습니다", "warning")
     } finally {
         isLoadingLatest.value = false
     }
