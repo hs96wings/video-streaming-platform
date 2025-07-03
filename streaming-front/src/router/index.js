@@ -5,8 +5,10 @@ import HomePage from '@/views/HomePage.vue'
 import VideoUpload from "@/views/VideoUpload.vue"
 import VideoList from '@/views/VideoList.vue'
 import VideoDetail from '@/views/VideoDetail.vue'
-import AdminPage from '@/views/AdminPage.vue'
-import AdminUpdatePage from "@/views/AdminUpdatePage.vue"
+import AdminLayout from "@/views/AdminLayout.vue"
+import AdminVideos from "@/views/AdminVideos.vue"
+import AdminUpdateVideo from "@/views/AdminUpdateVideo.vue"
+import AdminStats from "@/views/AdminStats.vue"
 import ChatPage from "@/views/ChatPage.vue"
 import GroupChatList from "@/views/GroupChatList.vue"
 import MyChatPage from "@/views/MyChatPage.vue"
@@ -21,8 +23,24 @@ const routes = [
     { path: '/upload', name: 'VideoUpload', component: VideoUpload, meta: { requireAuth: true, requireAdmin: true }},
     { path: '/list', name: 'VideoList', component: VideoList },
     { path: '/video/:id', name: 'VideoDetail', component: VideoDetail },
-    { path: '/admin', name: 'AdminPage', component: AdminPage, meta: { requireAuth: true, requireAdmin: true }},
-    { path: '/update/:id', name: 'AdminUpdatePage', component: AdminUpdatePage, meta: { requireAuth: true, requireAdmin: true }},
+    {
+        path: '/admin', component: AdminLayout,
+        redirect: '/admin/videos',
+        children: [
+            {
+                path: 'videos',
+                name: 'AdminVideos',
+                component: AdminVideos
+            },
+            {
+                path: 'stats',
+                name: 'AdminStats',
+                component: AdminStats
+            }
+        ],
+        meta: { requireAuth: true, requireAdmin: true }
+    },
+    { path: '/update/:id', name: 'AdminUpdateVideo', component: AdminUpdateVideo, meta: { requireAuth: true, requireAdmin: true }},
     { path: '/chat/:roomId', name: 'ChatPage', component: ChatPage },
     { path: '/groupchat/list', name: 'GroupChatList', component: GroupChatList, meta: { requireAuth: true }},
     { path: '/my/chat/page', name: 'MyChatPage', component: MyChatPage, meta: { requireAuth: true } }
