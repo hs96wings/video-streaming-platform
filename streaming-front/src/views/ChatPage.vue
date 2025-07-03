@@ -27,16 +27,19 @@
 
 <script setup>
 import { ref, nextTick, onBeforeUnmount, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import SockJS from 'sockjs-client'
 import { Client } from '@stomp/stompjs'
 import { useAuthStore } from '@/stores/auth';
 import { onBeforeRouteLeave } from 'vue-router';
+import { useSnackbarStore } from '@/stores/snackbarStore';
 import axios from 'axios';
 
 const auth = useAuthStore()
 const route = useRoute()
+const router = useRouter()
 const token = auth.token;
+const snackBar = useSnackbarStore()
 
 const messages = ref([])
 const newMessage = ref('')
@@ -48,7 +51,6 @@ const stompClient = new Client({
     // 2. SockJS를 통해 커넥션을 만듬
     connectHeaders: {'Authorization': `Bearer ${token}`},
     webSocketFactory: () => new SockJS(`${process.env.VUE_APP_API_BASE_URL}/connect`),
-    debug: (str) => console.log('[STOMP]', str),
     reconnectDelay: 5000 // 연결 끊겼을 때 재연결 시도
 })
 
@@ -67,8 +69,17 @@ stompClient.onConnect = () => {
 stompClient.activate()
 
 onMounted(async () => {
-    const { data } = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/chat/history/${roomId.value}`);
-    messages.value = data
+    try {
+        const { data } = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/chat/history/${roomId.value}`);
+        messages.value = data
+    } catch (err) {
+        if (err.response && err.response.status === 403) {
+            snackBar.showSnackbar('로그인이 필요합니다', 'warning')
+            router.replace('/login')
+        } else {
+            snackBar.showSnackbar('문제가 발생했습니다', 'error')
+        }
+    }
 })
 
 function sendMessage() {
@@ -93,12 +104,24 @@ function scrollToBottom() {
 }
 
 onBeforeUnmount(async () => {
-    await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/chat/room/${roomId.value}/read`)
+    if (auth.token) {
+        try {
+            await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/chat/room/${roomId.value}/read`)
+        } catch (err) {
+            console.warn('읽음 처리 실패 (onBeforeUnmount)', err)
+        }
+    }
     stompClient.deactivate()
 })
 
 onBeforeRouteLeave(async (to, from, next) => {
-    await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/chat/room/${roomId.value}/read`)
+    if (auth.token) {
+        try {
+            await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/chat/room/${roomId.value}/read`)
+        } catch (err) {
+            console.warn('읽음 처리 실패 (onBeforeRouteLeave)', err)
+        }
+    }
     stompClient.deactivate()
     next()
 })

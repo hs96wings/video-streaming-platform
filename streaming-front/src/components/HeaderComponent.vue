@@ -5,7 +5,7 @@
                 <v-col cols="auto" class="d-flex justify-start">
                     <div class="d-none d-md-flex align-center">
                         <v-btn :to="{path: '/list'}">영상 목록</v-btn>
-                         <v-btn v-if="isLogin" :to="{path: '/groupchat/list'}" class="ml-2">그룹챗 목록</v-btn>
+                        <v-btn :to="{path: '/groupchat/list'}" class="ml-2">그룹챗 목록</v-btn>
                     </div>
                     <v-app-bar-nav-icon class="d-md-none" @click="toggleDrawer"></v-app-bar-nav-icon>
                 </v-col>
@@ -56,8 +56,10 @@
 <script setup>
 import { useAuthStore } from '@/stores/auth';
 import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify'
+import { useNotificationStore } from '@/stores/notificationStore';
+import axios from 'axios';
 
 // 반응형 네비게이션 드로어 상태
 const drawer = ref(false)
@@ -69,17 +71,27 @@ const toggleDrawer = () => {
 const display = useDisplay()
 const isMobile = computed(() => display.mobile.value)
 
-// 1. Pinia 스토어 불러오기
 const auth = useAuthStore()
+const route = useRoute()
 const router = useRouter()
+const sseStore = useNotificationStore()
 
-// 2. computed로 로그인/관리자 여부 가져오기
 const isLogin = computed(() => auth.isLogin)
 const isAdmin = computed(() => auth.isAdmin)
 
-// 3. 로그아웃 시 스토어 액션 호출
-function doLogout() {
-    auth.logout()
-    router.push('/')
+async function doLogout() {
+    try {
+        // 채팅방에 있는 경우 읽음확인 처리
+        if (route.name === 'ChatPage') {
+            const roomId = route.params.roomId
+            await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/chat/room/${roomId}/read`)
+        } 
+    } catch (err) {
+        console.warn('읽음 처리 실패 (로그아웃 진행)', err)
+    } finally {
+        sseStore.disconnectSSE()
+        auth.logout()
+        router.push('/')
+    }
 }
 </script>
