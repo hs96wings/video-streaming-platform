@@ -15,7 +15,8 @@ export default defineConfig({
         }
     },
     define: {
-        global: 'globalThis'
+        'global': 'globalThis',
+        'crypto': 'undefined'
     },
     server: {
         port: 3000
