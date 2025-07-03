@@ -38,6 +38,7 @@ public class SecurityConfigs {
                         .requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll() // 테스트가 진행되지 않아 추가
                         // 누구나 볼 수 있는 공용 API
                         .requestMatchers(HttpMethod.GET, "/api/video/**", "/api/comment/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/log/**").permitAll() // 로그 수집용
                         .requestMatchers(HttpMethod.PATCH, "/api/video/**").permitAll()
                         .requestMatchers("/api/sse/**").permitAll()
                         // 그 외 /api/**는 일단 "인증된 유저"여야 열어 줌
