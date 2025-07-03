@@ -50,7 +50,7 @@ const roomId = ref(route.params.roomId)
 const stompClient = new Client({
     // 2. SockJS를 통해 커넥션을 만듬
     connectHeaders: {'Authorization': `Bearer ${token}`},
-    webSocketFactory: () => new SockJS(`${process.env.VUE_APP_API_BASE_URL}/connect`),
+    webSocketFactory: () => new SockJS(`${import.meta.env.VITE_API_BASE_URL}/connect`),
     reconnectDelay: 5000 // 연결 끊겼을 때 재연결 시도
 })
 
@@ -70,7 +70,7 @@ stompClient.activate()
 
 onMounted(async () => {
     try {
-        const { data } = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/chat/history/${roomId.value}`);
+        const { data } = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/chat/history/${roomId.value}`);
         messages.value = data
     } catch (err) {
         if (err.response && err.response.status === 403) {
@@ -106,7 +106,7 @@ function scrollToBottom() {
 onBeforeUnmount(async () => {
     if (auth.token) {
         try {
-            await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/chat/room/${roomId.value}/read`)
+            await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/chat/room/${roomId.value}/read`)
         } catch (err) {
             console.warn('읽음 처리 실패 (onBeforeUnmount)', err)
         }
@@ -117,7 +117,7 @@ onBeforeUnmount(async () => {
 onBeforeRouteLeave(async (to, from, next) => {
     if (auth.token) {
         try {
-            await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/chat/room/${roomId.value}/read`)
+            await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/chat/room/${roomId.value}/read`)
         } catch (err) {
             console.warn('읽음 처리 실패 (onBeforeRouteLeave)', err)
         }

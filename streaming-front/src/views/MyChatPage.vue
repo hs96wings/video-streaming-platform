@@ -48,7 +48,7 @@ const chatList = ref([])
 const notificationStore = useNotificationStore()
 
 onMounted(async () => {
-    const { data } = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/chat/my/rooms`);
+    const { data } = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/chat/my/rooms`);
     chatList.value = data
 
     // 컴포넌트 마운트 시 SSE 연결 시도
@@ -82,7 +82,7 @@ function enterChatRoom(roomId) {
 }
 
 async function leaveChatRoom(roomId) {
-    await axios.delete(`${process.env.VUE_APP_API_BASE_URL}/api/chat/room/group/${roomId}/leave`)
+    await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/chat/room/group/${roomId}/leave`)
     chatList.value = chatList.value.filter(c => c.roomId !== roomId)
 }
 

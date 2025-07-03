@@ -31,7 +31,7 @@ const videoList = ref([])
 const searchKeyword = ref('')
 
 onMounted(async () => {
-    const { data } = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/video/list`);
+    const { data } = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/video/list`);
     videoList.value = data
 })
 
@@ -42,10 +42,10 @@ function goToVideo(id) {
 async function searchVideos() {
     try {
         if (searchKeyword.value.trim() === "") {
-            const { data } = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/video/list`);
+            const { data } = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/video/list`);
             videoList.value = data
         } else {
-            const { data } = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/video/search?title=${searchKeyword.value}`)
+            const { data } = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/video/search?title=${searchKeyword.value}`)
             videoList.value = data
         }
     } catch (err) {

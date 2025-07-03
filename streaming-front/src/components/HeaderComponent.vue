@@ -84,7 +84,7 @@ async function doLogout() {
         // 채팅방에 있는 경우 읽음확인 처리
         if (route.name === 'ChatPage') {
             const roomId = route.params.roomId
-            await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/chat/room/${roomId}/read`)
+            await axios.post(`${process.env.VITE_API_BASE_URL}/api/chat/room/${roomId}/read`)
         } 
     } catch (err) {
         console.warn('읽음 처리 실패 (로그아웃 진행)', err)

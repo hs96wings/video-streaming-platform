@@ -30,7 +30,7 @@ export const useNotificationStore = defineStore('notification', {
                 return
             }
 
-            const sseUrl = `${process.env.VUE_APP_API_BASE_URL}/api/sse/connect`
+            const sseUrl = `${import.meta.env.VITE_API_BASE_URL}/api/sse/connect`
             
             // 새로운 AbortController를 생성하여 연결 제어
             const controller = new AbortController()

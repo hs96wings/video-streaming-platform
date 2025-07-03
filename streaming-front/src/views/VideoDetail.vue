@@ -93,8 +93,8 @@ function formatDate(datetime) {
 }
 
 async function fetchVideoAndComments() {
-    const res = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/video/${id}`)
-    const commentRes = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/comment/${id}`)
+    const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/video/${id}`)
+    const commentRes = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/comment/${id}`)
     title.value = res.data.title
     videoPath.value = res.data.videoPath
     description.value = res.data.description
@@ -102,7 +102,7 @@ async function fetchVideoAndComments() {
 }
 
 async function postComment() {
-    await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/comment`, {
+    await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/comment`, {
         videoId: id,
         content: newComment.value
     })
@@ -111,12 +111,12 @@ async function postComment() {
 }
 
 async function deleteComment(commentId) {
-    await axios.delete(`${process.env.VUE_APP_API_BASE_URL}/api/comment/${commentId}`)
+    await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/comment/${commentId}`)
     fetchComments()
 }
 
 async function fetchComments() {
-    const { data } = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/comment/${id}`)
+    const { data } = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/comment/${id}`)
     comments.value = data
 }
 
@@ -146,7 +146,7 @@ function openPrivateChatModal(userId) {
 }
 
 async function createPrivateChatRoom() {
-    const { data } = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/chat/room/private/create?otherMemberUserId=${targetUserId.value}`)
+    const { data } = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/chat/room/private/create?otherMemberUserId=${targetUserId.value}`)
     router.push(`/chat/${data}`)
 }
 

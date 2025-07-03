@@ -42,7 +42,7 @@ function formatDate(datetime) {
 }
 
 onMounted(async () => {
-    const { data } = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/video/admin`);
+    const { data } = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/video/admin`);
     videoList.value = data
 })
 
@@ -51,7 +51,7 @@ function goToVideo(id) {
 }
 
 async function deleteVideo(id) {
-    await axios.delete(`${process.env.VUE_APP_API_BASE_URL}/api/video/${id}`)
+    await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/video/${id}`)
     videoList.value = videoList.value.filter(v => v.id !== id)
 }
 </script>

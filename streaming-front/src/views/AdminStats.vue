@@ -27,7 +27,7 @@ const router = useRouter()
 
 onMounted(async () => {
     try {
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/admin/stats/visits/daily`)
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/admin/stats/visits/daily`)
         if (Array.isArray(response.data)) {
             visitStats.value = response.data
         } else {

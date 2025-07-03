@@ -68,18 +68,18 @@ onMounted(async () => {
 })
 
 async function joinChatRoom(roomId) {
-    await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/chat/room/group/${roomId}/join`)
+    await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/chat/room/group/${roomId}/join`)
     router.push(`/chat/${roomId}`)
 }
 
 async function createChatRoom() {
-    await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/chat/room/group/create?roomName=${newRoomTitle.value}`, null)
+    await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/chat/room/group/create?roomName=${newRoomTitle.value}`, null)
     showCreateRoomModal.value = false
     loadChatRoom()
 }
 
 async function loadChatRoom() {
-    const { data } = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/chat/room/group/list`);
+    const { data } = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/chat/room/group/list`);
     chatList.value = data
 }
 

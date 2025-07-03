@@ -51,7 +51,7 @@ async function upload() {
     formData.append("file", file.value)
 
     try {
-        await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/video/upload`, formData)
+        await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/video/upload`, formData)
         router.push('/admin')
     } catch (err) {
         console.log(`업로드 실패: ${err.response.data} ${formData}`)

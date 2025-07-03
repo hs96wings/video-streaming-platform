@@ -39,12 +39,12 @@ const description = ref('')
 
 async function update() {
     const videoData = { title: title.value, description: description.value }
-    await axios.patch(`${process.env.VUE_APP_API_BASE_URL}/api/video/${id}`, videoData)
+    await axios.patch(`${import.meta.env.VITE_API_BASE_URL}/api/video/${id}`, videoData)
     router.push('/admin')
 }
 
 onMounted(async () => {
-    const res = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/video/${id}`)
+    const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/video/${id}`)
     title.value = res.data.title
     description.value = res.data.description
 })

@@ -50,7 +50,7 @@ const snackbarStore = useSnackbarStore()
 const loadPopularVideos = async () => {
     isLoadingPopular.value = true
     try {
-        const { data } = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/video/popular`)
+        const { data } = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/video/popular`)
         popularVideos.value = data
     } catch (err) {
         console.error("🔥 인기 영상 로딩 실패", err)
@@ -63,7 +63,7 @@ const loadPopularVideos = async () => {
 const loadLatestVideos = async () => {
     isLoadingLatest.value = true
     try {
-        const { data } = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/api/video/latest`)
+        const { data } = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/video/latest`)
         latestVideos.value = data
     } catch (err) {
         console.error("🆕 최신 영상 로딩 실패", err)
@@ -77,7 +77,7 @@ onMounted(async() => {
     loadPopularVideos()
     loadLatestVideos()
 
-    await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/log/visit`)
+    await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/log/visit`)
 })
 
 function goToVideo(id) {
