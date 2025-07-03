@@ -13,7 +13,6 @@ Thumbs.db
 *.env
 
 # 배포 전용 파일
-Dockerfile
 docker-compose.yml
 
 # --- Spring Boot (Java) --------------
