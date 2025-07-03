@@ -76,6 +76,8 @@ const loadLatestVideos = async () => {
 onMounted(async() => {
     loadPopularVideos()
     loadLatestVideos()
+
+    await axios.post(`${process.env.VUE_APP_API_BASE_URL}/api/log/visit`)
 })
 
 function goToVideo(id) {
