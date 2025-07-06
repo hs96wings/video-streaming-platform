@@ -61,10 +61,6 @@ def process_job(job):
     subprocess.run(['ffmpeg', '-i', new_path, '-ss', '00:00:01', '-vframes', '1', thumb_path])
 
     base_url = os.environ.get("BASE_URL")
-    requests.patch(f"")
-    save_thumb_path = f"{base_url}/thumbs/{vid}.png"
-    save_video_path = f"{base_url}/hls_output/{vid}/index.m3u8"
-    
     # 상태 변경 요청 (READY)
     requests.patch(f"http://{SPRING_HOST}:{SPRING_PORT}/api/video/{vid}/status?status=READY",
                     json={"videoPath": f"{base_url}/hls_output/{vid}/index.m3u8", "thumbnailPath": f"{base_url}/thumbs/{vid}.png"},
