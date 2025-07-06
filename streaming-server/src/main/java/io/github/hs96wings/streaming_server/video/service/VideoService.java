@@ -112,11 +112,13 @@ public class VideoService {
 
         video.setVideoStatus(status);
 
-        if (videoHlsReqDto.getVideoPath() != null)
-            video.setVideoPath(videoHlsReqDto.getVideoPath());
+        if (videoHlsReqDto != null) {
+            if (videoHlsReqDto.getVideoPath() != null)
+                video.setVideoPath(videoHlsReqDto.getVideoPath());
 
-        if (videoHlsReqDto.getThumbnailPath() != null)
-            video.setThumbnailPath(videoHlsReqDto.getThumbnailPath());
+            if (videoHlsReqDto.getThumbnailPath() != null)
+                video.setThumbnailPath(videoHlsReqDto.getThumbnailPath());
+        }
     }
 
     public List<VideoResDto> searchByTitle(String title) {

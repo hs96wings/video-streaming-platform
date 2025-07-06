@@ -51,7 +51,7 @@ def process_job(job):
     # 상태 변경 요청 (PROCESSING)
     requests.patch(f"http://{SPRING_HOST}:{SPRING_PORT}/api/video/{vid}/status?status=PROCESSING", headers=headers)
 
-    base_dir = os.environ.get("base_dir")
+    base_dir = os.environ.get("BASE_DIR")
     output_dir = f"{base_dir}/hls_output/{vid}"
     os.makedirs(output_dir, exist_ok=True)
 
