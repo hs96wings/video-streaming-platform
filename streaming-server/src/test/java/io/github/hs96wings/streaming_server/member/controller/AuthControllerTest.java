@@ -1,16 +1,15 @@
 package io.github.hs96wings.streaming_server.member.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.hs96wings.streaming_server.common.auth.JwtTokenProvider;
+import io.github.hs96wings.streaming_server.auth.controller.AuthController;
+import io.github.hs96wings.streaming_server.auth.jwt.JwtTokenProvider;
 import io.github.hs96wings.streaming_server.common.configs.SecurityConfigs;
-import io.github.hs96wings.streaming_server.member.controller.MemberController;
 import io.github.hs96wings.streaming_server.member.domain.Member;
-import io.github.hs96wings.streaming_server.member.dto.MemberLoginReqDto;
-import io.github.hs96wings.streaming_server.member.dto.MemberSaveReqDto;
-import io.github.hs96wings.streaming_server.member.service.MemberService;
+import io.github.hs96wings.streaming_server.auth.dto.LoginRequestDto;
+import io.github.hs96wings.streaming_server.auth.dto.SignupRequestDto;
+import io.github.hs96wings.streaming_server.auth.service.AuthService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -25,15 +24,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
-@WebMvcTest(MemberController.class)
+@WebMvcTest(AuthController.class)
 @Import(SecurityConfigs.class) // permitAll 규칙을 가져옴
 @AutoConfigureMockMvc
-public class MemberControllerTest {
+public class AuthControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
-    private MemberService memberService;
+    private AuthService authService;
 
     @MockitoBean
     private JwtTokenProvider jwtTokenProvider; // 실제 필터는 무시
@@ -45,7 +44,7 @@ public class MemberControllerTest {
     @DisplayName("회원 생성 성공")
     void testMemberCreate() throws Exception {
         // given
-        MemberSaveReqDto reqDto = new MemberSaveReqDto("testUser", "1234");
+        SignupRequestDto reqDto = new SignupRequestDto("testUser", "1234");
 
         Member savedMember = Member.builder()
                 .id(1L)
@@ -53,7 +52,7 @@ public class MemberControllerTest {
                 .password("1234")
                 .build();
 
-        when(memberService.create(any(MemberSaveReqDto.class))).thenReturn(savedMember);
+        when(authService.create(any(SignupRequestDto.class))).thenReturn(savedMember);
 
         // when & then
         mockMvc.perform(post("/member/create")
@@ -67,10 +66,10 @@ public class MemberControllerTest {
     @DisplayName("중복 회원 처리 테스트")
     void testDuplicateMember() throws Exception {
         // given
-        MemberSaveReqDto duplicateDto = new MemberSaveReqDto("testUser", "1234");
+        SignupRequestDto duplicateDto = new SignupRequestDto("testUser", "1234");
 
         // 중복 상황을 시뮬레이션 - create가 예외를 던지도록 설정
-        when(memberService.create(any(MemberSaveReqDto.class)))
+        when(authService.create(any(SignupRequestDto.class)))
                 .thenThrow(new IllegalArgumentException("이미 존재하는 아이디입니다."));
 
 
@@ -87,19 +86,19 @@ public class MemberControllerTest {
     @DisplayName("로그인 성공 시 id와 토큰이 응답에 들어간다")
     void testLoginMember() throws Exception {
         // given
-        MemberLoginReqDto memberLoginReqDto = new MemberLoginReqDto("testUser", "1234");
+        LoginRequestDto loginRequestDto = new LoginRequestDto("testUser", "1234");
         Member savedMember = Member.builder()
                 .id(1L)
                 .userid("testUser")
                 .password("1234")
                 .build();
 
-        when(memberService.login(any(MemberLoginReqDto.class))).thenReturn(savedMember);
+        when(authService.login(any(LoginRequestDto.class))).thenReturn(savedMember);
         when(jwtTokenProvider.createToken("testUser", "USER")).thenReturn("dummy-jwt-token");
 
         mockMvc.perform(post("/member/doLogin")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(new ObjectMapper().writeValueAsString(memberLoginReqDto)))
+                .content(new ObjectMapper().writeValueAsString(loginRequestDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.token").value("dummy-jwt-token"));

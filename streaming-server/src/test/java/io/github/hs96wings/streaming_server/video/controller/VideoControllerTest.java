@@ -1,7 +1,6 @@
 package io.github.hs96wings.streaming_server.video.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.hs96wings.streaming_server.member.integration.MemberServiceIntegrationTest;
 import io.github.hs96wings.streaming_server.video.domain.Video;
 import io.github.hs96wings.streaming_server.video.domain.VideoStatus;
 import io.github.hs96wings.streaming_server.video.dto.VideoHlsReqDto;
@@ -22,8 +21,6 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 import java.time.LocalDateTime;
 import java.util.List;

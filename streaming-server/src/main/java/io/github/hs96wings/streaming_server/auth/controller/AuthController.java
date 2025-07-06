@@ -1,10 +1,10 @@
-package io.github.hs96wings.streaming_server.member.controller;
+package io.github.hs96wings.streaming_server.auth.controller;
 
-import io.github.hs96wings.streaming_server.common.auth.JwtTokenProvider;
+import io.github.hs96wings.streaming_server.auth.jwt.JwtTokenProvider;
 import io.github.hs96wings.streaming_server.member.domain.Member;
-import io.github.hs96wings.streaming_server.member.dto.MemberLoginReqDto;
-import io.github.hs96wings.streaming_server.member.dto.MemberSaveReqDto;
-import io.github.hs96wings.streaming_server.member.service.MemberService;
+import io.github.hs96wings.streaming_server.auth.dto.LoginRequestDto;
+import io.github.hs96wings.streaming_server.auth.dto.SignupRequestDto;
+import io.github.hs96wings.streaming_server.auth.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,28 +16,28 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/member")
-public class MemberController {
-    private final MemberService memberService;
+@RequestMapping("/api/auth")
+public class AuthController {
+    private final AuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
 
-    public MemberController(MemberService memberService, JwtTokenProvider jwtTokenProvider) {
-        this.memberService = memberService;
+    public AuthController(AuthService authService, JwtTokenProvider jwtTokenProvider) {
+        this.authService = authService;
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<?> memberCreate(@RequestBody MemberSaveReqDto memberSaveReqDto) {
-        Member member = memberService.create(memberSaveReqDto);
+    @PostMapping("/signup")
+    public ResponseEntity<?> memberCreate(@RequestBody SignupRequestDto signupRequestDto) {
+        Member member = authService.create(signupRequestDto);
 
         Map<String, Object> loginInfo = getLoginInfo(member);
 
         return new ResponseEntity<>(loginInfo, HttpStatus.CREATED);
     }
 
-    @PostMapping("/doLogin")
-    public ResponseEntity<?> doLogin(@RequestBody MemberLoginReqDto memberLoginReqDto) {
-        Member member = memberService.login(memberLoginReqDto);
+    @PostMapping("/login")
+    public ResponseEntity<?> doLogin(@RequestBody LoginRequestDto loginRequestDto) {
+        Member member = authService.login(loginRequestDto);
 
         Map<String, Object> loginInfo = getLoginInfo(member);
 

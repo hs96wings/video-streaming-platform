@@ -1,6 +1,5 @@
 package io.github.hs96wings.streaming_server.common.sse.controller;
 
-import io.github.hs96wings.streaming_server.common.auth.JwtTokenProvider;
 import io.github.hs96wings.streaming_server.common.sse.service.SseEmitterService;
 import io.github.hs96wings.streaming_server.member.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -8,7 +7,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 

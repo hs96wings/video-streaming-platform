@@ -1,4 +1,4 @@
-package io.github.hs96wings.streaming_server.common.auth;
+package io.github.hs96wings.streaming_server.auth.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

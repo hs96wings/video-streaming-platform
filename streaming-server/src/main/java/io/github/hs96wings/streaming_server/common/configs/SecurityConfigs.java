@@ -1,6 +1,6 @@
 package io.github.hs96wings.streaming_server.common.configs;
 
-import io.github.hs96wings.streaming_server.common.auth.JwtAuthFilter;
+import io.github.hs96wings.streaming_server.auth.jwt.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -8,7 +8,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -17,7 +16,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -31,17 +29,23 @@ public class SecurityConfigs {
                 .cors(cors -> cors.configurationSource(configurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
-                // 1) 인증 필터 등록
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                // 2) URL 패턴별 접근권한(인가) 선언 - 여기서는 "인증된 사용자만 가능하다" 처리
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll() // 테스트가 진행되지 않아 추가
-                        // 누구나 볼 수 있는 공용 API
+                        // 프리플라이트 요청 허용
+                        .requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
+                        // 공용 GET API
                         .requestMatchers(HttpMethod.GET, "/api/video/**", "/api/comment/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/log/**").permitAll() // 로그 수집용
+                        // 로그 수집용은 누구나 가능
+                        .requestMatchers(HttpMethod.POST, "/api/log/**").permitAll()
+                        // 임시: 관리자 영상 수정 권한 (추후 수정 필요)
                         .requestMatchers(HttpMethod.PATCH, "/api/video/**").permitAll()
+                        // SSE 연결은 인증 없이 열어둠
                         .requestMatchers("/api/sse/**").permitAll()
-                        // 그 외 /api/**는 일단 "인증된 유저"여야 열어 줌
+                        // 로그인 및 회원가입 API
+                        .requestMatchers("/api/auth/login", "/api/auth/signup").permitAll()
+                        // /api/admin은 관리자 권한 필요
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // 나머지 /api/**은 인증 필요
                         .requestMatchers("/api/**").authenticated()
                         // 정적 리소스 등 나머지는 그대로 허용
                         .anyRequest().permitAll()

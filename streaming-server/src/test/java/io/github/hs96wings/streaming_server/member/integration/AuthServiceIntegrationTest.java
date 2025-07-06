@@ -2,10 +2,10 @@ package io.github.hs96wings.streaming_server.member.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.hs96wings.streaming_server.member.domain.Member;
-import io.github.hs96wings.streaming_server.member.dto.MemberLoginReqDto;
-import io.github.hs96wings.streaming_server.member.dto.MemberSaveReqDto;
+import io.github.hs96wings.streaming_server.auth.dto.LoginRequestDto;
+import io.github.hs96wings.streaming_server.auth.dto.SignupRequestDto;
 import io.github.hs96wings.streaming_server.member.repository.MemberRepository;
-import io.github.hs96wings.streaming_server.member.service.MemberService;
+import io.github.hs96wings.streaming_server.auth.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,22 +35,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Transactional
-public class MemberServiceIntegrationTest {
+public class AuthServiceIntegrationTest {
     @Autowired
     MockMvc mockMvc;
     @Autowired
-    MemberService memberService;
+    AuthService authService;
     @Autowired
     MemberRepository memberRepository;
     @Autowired
     PasswordEncoder passwordEncoder;
 
-    private MemberSaveReqDto dto;
-    private static final Logger log = LoggerFactory.getLogger(MemberServiceIntegrationTest.class);
+    private SignupRequestDto dto;
+    private static final Logger log = LoggerFactory.getLogger(AuthServiceIntegrationTest.class);
 
     @BeforeEach
     void setUp() {
-        dto = new MemberSaveReqDto("testUser", "1234");
+        dto = new SignupRequestDto("testUser", "1234");
     }
 
     @Test
@@ -58,7 +58,7 @@ public class MemberServiceIntegrationTest {
     @DisplayName("DB에 user를 저장한다")
     void createMember_shouldPersist() {
         // given
-        Member newMember = memberService.create(dto);
+        Member newMember = authService.create(dto);
 
         // when & then
         assertThat(newMember.getId()).isNotNull();
@@ -85,7 +85,7 @@ public class MemberServiceIntegrationTest {
         // when & then
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
-                () -> memberService.create(dto)
+                () -> authService.create(dto)
         );
         assertThat(ex.getMessage()).isEqualTo("이미 존재하는 아이디입니다.");
 
@@ -100,13 +100,13 @@ public class MemberServiceIntegrationTest {
     @DisplayName("통합 로그인 테스트: 실제 JWT를 발급받는다")
     void loginIntegration() throws Exception {
         // given
-        memberService.create(dto);
-        MemberLoginReqDto memberLoginReqDto = new MemberLoginReqDto("testUser", "1234");
+        authService.create(dto);
+        LoginRequestDto loginRequestDto = new LoginRequestDto("testUser", "1234");
 
         // when & then
         MvcResult mvcResult = mockMvc.perform(post("/member/doLogin")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(new ObjectMapper().writeValueAsString(memberLoginReqDto)))
+                .content(new ObjectMapper().writeValueAsString(loginRequestDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.token").isString())

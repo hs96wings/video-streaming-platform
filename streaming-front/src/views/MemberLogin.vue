@@ -38,7 +38,7 @@ const auth = useAuthStore()
 async function doLogin() {
     try {
         const loginData = { userid: userid.value, password: password.value }
-        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/member/doLogin`, loginData)
+        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/auth/login`, loginData)
         auth.updateAuthState(response.data.token)
         router.push('/')
     } catch (error) {

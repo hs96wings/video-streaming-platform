@@ -6,8 +6,8 @@ import io.github.hs96wings.streaming_server.comment.dto.CommentSaveReqDto;
 import io.github.hs96wings.streaming_server.comment.repository.CommentRepository;
 import io.github.hs96wings.streaming_server.comment.service.CommentService;
 import io.github.hs96wings.streaming_server.member.domain.Member;
-import io.github.hs96wings.streaming_server.member.dto.MemberSaveReqDto;
-import io.github.hs96wings.streaming_server.member.service.MemberService;
+import io.github.hs96wings.streaming_server.auth.dto.SignupRequestDto;
+import io.github.hs96wings.streaming_server.auth.service.AuthService;
 import io.github.hs96wings.streaming_server.video.domain.Video;
 import io.github.hs96wings.streaming_server.video.dto.VideoSaveReqDto;
 import io.github.hs96wings.streaming_server.video.service.VideoService;
@@ -42,7 +42,7 @@ public class CommentServiceIntegrationTest {
     @Autowired
     CommentRepository commentRepository;
     @Autowired
-    MemberService memberService;
+    AuthService authService;
     @Autowired
     VideoService videoService;
 
@@ -54,7 +54,7 @@ public class CommentServiceIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        member = memberService.create(new MemberSaveReqDto("testUser", "1234"));
+        member = authService.create(new SignupRequestDto("testUser", "1234"));
         video = videoService.upload(new VideoSaveReqDto("테스트 제목", "테스트 설명",
                 new MockMultipartFile("file", "test.mp4", MediaType.APPLICATION_OCTET_STREAM_VALUE, "dummy content".getBytes())));
         comment = commentService.addComment(new CommentSaveReqDto(video.getId(), "테스트 댓글"), member.getUserid());

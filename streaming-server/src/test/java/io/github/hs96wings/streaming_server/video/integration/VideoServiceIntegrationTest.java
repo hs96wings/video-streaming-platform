@@ -1,6 +1,5 @@
 package io.github.hs96wings.streaming_server.video.integration;
 
-import io.github.hs96wings.streaming_server.member.integration.MemberServiceIntegrationTest;
 import io.github.hs96wings.streaming_server.video.domain.Video;
 import io.github.hs96wings.streaming_server.video.domain.VideoStatus;
 import io.github.hs96wings.streaming_server.video.dto.VideoHlsReqDto;
@@ -9,7 +8,6 @@ import io.github.hs96wings.streaming_server.video.dto.VideoResDto;
 import io.github.hs96wings.streaming_server.video.dto.VideoSaveReqDto;
 import io.github.hs96wings.streaming_server.video.repository.VideoRepository;
 import io.github.hs96wings.streaming_server.video.service.VideoService;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
