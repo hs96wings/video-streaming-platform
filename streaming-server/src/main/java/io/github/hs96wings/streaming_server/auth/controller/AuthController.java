@@ -7,10 +7,7 @@ import io.github.hs96wings.streaming_server.auth.dto.SignupRequestDto;
 import io.github.hs96wings.streaming_server.auth.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,6 +39,12 @@ public class AuthController {
         Map<String, Object> loginInfo = getLoginInfo(member);
 
         return new ResponseEntity<>(loginInfo, HttpStatus.OK);
+    }
+
+    @GetMapping("/validate")
+    public ResponseEntity<Void> validateToken() {
+        // JwtAuthenticationFilter에서 토큰 유효성 검사되므로 여기까지 오면 유효한 것
+        return ResponseEntity.ok().build();
     }
 
     private Map<String, Object> getLoginInfo(Member member) {

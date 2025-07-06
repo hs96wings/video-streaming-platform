@@ -28,11 +28,26 @@ import { onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import HeaderComponent from './components/HeaderComponent.vue'
 import { useSnackbarStore } from '@/stores/snackbarStore';
+import axios from 'axios';
+import { useRouter } from 'vue-router';
 
 const auth = useAuthStore()
 const snackbarStore = useSnackbarStore()
-onMounted(() => {
-  auth.updateAuthState(auth.token) // 초기화
+const router = useRouter()
+
+onMounted(async () => {
+  const token = auth.token
+
+  if (token) {
+    try {
+      await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/auth/validate`)
+      auth.updateAuthState(token)
+    } catch (error) {
+      auth.logout()
+      snackbarStore.showSnackbar('세션이 만료되었습니다. 다시 로그인 해주세요.', 'warning')
+      router.replace('/login')
+    }
+  }
 })
 
 </script>
