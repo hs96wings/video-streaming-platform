@@ -56,7 +56,10 @@ axios.interceptors.response.use(
                     break;
                 case 401: // Unauthorized
                     snackbarStore.showSnackbar('인증되지 않았습니다. 다시 로그인해주세요.', 'error')
-                    break;
+
+                    localStorage.removeItem('token')
+                    router.replace('/login')
+                    return Promise.reject(error)
                 case 403: // Forbidden
                     snackbarStore.showSnackbar('접근 권한이 없습니다.', 'error')
                     break;
