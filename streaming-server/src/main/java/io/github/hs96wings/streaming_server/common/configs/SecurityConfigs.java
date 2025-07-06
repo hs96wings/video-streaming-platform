@@ -38,7 +38,7 @@ public class SecurityConfigs {
                         // 로그 수집용은 누구나 가능
                         .requestMatchers(HttpMethod.POST, "/api/log/**").permitAll()
                         // 임시: 관리자 영상 수정 권한 (추후 수정 필요)
-                        .requestMatchers(HttpMethod.PATCH, "/api/video/**").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/api/video/**").hasRole("ADMIN")
                         // SSE 연결은 인증 없이 열어둠
                         .requestMatchers("/api/sse/**").permitAll()
                         // 로그인 및 회원가입 API

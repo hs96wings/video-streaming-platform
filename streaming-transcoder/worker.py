@@ -23,20 +23,38 @@ def worker_loop():
             time.sleep(2)
 
 def process_job(job):
+
+    login_url = "http://localhost:8080/api/auth/login"
+    login_data = {
+        "userid": "admin",
+        "password": "1234"
+    }
+
+    res = requests.post(login_url, json=login_data)
+    token = res.json().get("token")
+
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+
     data = json.loads(job)
     vid, path = data['videoId'], data['path']
     # 상태 업데이트: 호출 전 spring에 PATCH /api/video/{vid}/status?status=PROCESSING
-    requests.patch(f"http://localhost:8080/api/video/{vid}/status?status=PROCESSING".format(vid))
+    requests.patch(f"http://localhost:8080/api/video/{vid}/status?status=PROCESSING".format(vid), headers=headers)
     base_dir = os.environ.get("base_dir")
 
     output_dir = f"{base_dir}/hls_output/{vid}"
+    os.makedirs(f"{base_dir}/hls_output", exist_ok=True)
+    os.makedirs(f"{base_dir}/thumbs", exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)
+
     new_path = f"{output_dir}/index.m3u8"
     subprocess.run(['ffmpeg', '-i', path, '-codec', 'copy', '-start_number', '0', '-hls_time', '10', '-hls_list_size', '0', '-f', 'hls', new_path])
     thumb_path = f"{base_dir}/thumbs/{vid}.png"
 
     base_url = os.environ.get("base_url")
     save_thumb_path = f"{base_url}/thumbs/{vid}.png"
-    save_video_path = f"{base_url}/hls_output/{vid}.m3u8"
+    save_video_path = f"{base_url}/hls_output/{vid}/index.m3u8"
     subprocess.run(['ffmpeg', '-i', new_path, '-ss', '00:00:01', '-vframes', '1', thumb_path])
     requests.patch(f"http://localhost:8080/api/video/{vid}/status?status=READY".format(vid),
-                    json={"videoPath": save_video_path, "thumbnailPath": save_thumb_path})
+                    json={"videoPath": save_video_path, "thumbnailPath": save_thumb_path}, headers=headers)
