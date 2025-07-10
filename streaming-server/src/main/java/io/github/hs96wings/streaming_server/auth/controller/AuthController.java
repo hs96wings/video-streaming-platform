@@ -48,7 +48,7 @@ public class AuthController {
     }
 
     private Map<String, Object> getLoginInfo(Member member) {
-        String jwtToken = jwtTokenProvider.createToken(member.getUserid(), member.getRole().toString());
+        String jwtToken = jwtTokenProvider.createToken(member);
         Map<String, Object> loginInfo = new HashMap<>();
         loginInfo.put("id", member.getId());
         loginInfo.put("token", jwtToken);

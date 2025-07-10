@@ -15,6 +15,7 @@ import io.github.hs96wings.streaming_server.common.sse.service.SseEmitterService
 import io.github.hs96wings.streaming_server.member.domain.Member;
 import io.github.hs96wings.streaming_server.member.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -24,11 +25,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@Slf4j
 public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatParticipantRepository chatParticipantRepository;
@@ -36,8 +39,6 @@ public class ChatService {
     private final ReadStatusRepository readStatusRepository;
     private final MemberRepository memberRepository;
     private final SseEmitterService sseEmitterService;
-
-    private static final Logger log = LoggerFactory.getLogger(ChatService.class);
 
     public ChatService(ChatRoomRepository chatRoomRepository, ChatParticipantRepository chatParticipantRepository, ChatMessageRepository chatMessageRepository, ReadStatusRepository readStatusRepository, MemberRepository memberRepository, SseEmitterService sseEmitterService) {
         this.chatRoomRepository = chatRoomRepository;
@@ -87,10 +88,7 @@ public class ChatService {
         }
     }
 
-    public void createGroupRoom(String roomName) {
-        Member member = memberRepository.findByUserid(SecurityContextHolder.getContext().getAuthentication().getName())
-                .orElseThrow(() -> new EntityNotFoundException("member cannot be found"));
-
+    public void createGroupRoom(Member member, String roomName) {
         // 채팅방 생성
         ChatRoom chatRoom = ChatRoom.builder()
                 .name(roomName)
@@ -112,13 +110,10 @@ public class ChatService {
                 .collect(Collectors.toList());
     }
 
-    public void addParticipantToGroupChat(Long roomId) {
+    public void addParticipantToGroupChat(Member member, Long roomId) {
         // 채팅방 조회
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 채팅방입니다"));
-        // 멤버 조회
-        Member member = memberRepository.findByUserid(SecurityContextHolder.getContext().getAuthentication().getName())
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 유저입니다"));
 
         if (chatRoom.getIsGroupChat().equals("N"))
             throw new IllegalArgumentException("그룹 채팅이 아닙니다");
@@ -139,18 +134,19 @@ public class ChatService {
         chatParticipantRepository.save(chatParticipant);
     }
 
-    public List<ChatMessageDto> getChatHistory(Long roomId) {
+    public List<ChatMessageDto> getChatHistory(Member member, Long roomId) {
         // 해당 채팅방에 참여자가 아닐 경우 에러
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 채팅방입니다"));
-        Member member = memberRepository.findByUserid(SecurityContextHolder.getContext().getAuthentication().getName())
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 유저입니다"));
         List<ChatParticipant> chatParticipants = chatRoom.getChatParticipants();
         boolean check = false;
 
+
         for (ChatParticipant c : chatParticipants) {
-            if (c.getMember().equals(member))
+            if (Objects.equals(c.getMember().getId(), member.getId())) {
                 check = true;
+                break;
+            }
         }
 
         if (!check) throw new IllegalArgumentException("본인이 속하지 않은 채팅방입니다");
@@ -175,11 +171,9 @@ public class ChatService {
         return false;
     }
 
-    public void messageRead(Long roomId) {
+    public void messageRead(Member member, Long roomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 채팅방입니다"));
-        Member member = memberRepository.findByUserid(SecurityContextHolder.getContext().getAuthentication().getName())
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 유저입니다"));
         ChatParticipant chatParticipant = chatParticipantRepository.findByChatRoomAndMember(chatRoom, member)
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 참여자입니다"));
 
@@ -190,9 +184,7 @@ public class ChatService {
         }
     }
 
-    public List<MyChatListResDto> getMyChatRooms() {
-        Member member = memberRepository.findByUserid(SecurityContextHolder.getContext().getAuthentication().getName())
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 유저입니다"));
+    public List<MyChatListResDto> getMyChatRooms(Member member) {
         List<ChatParticipant> chatParticipants = chatParticipantRepository.findAllByMember(member);
         List<MyChatListResDto> chatListResDtos = new ArrayList<>();
 
@@ -209,11 +201,9 @@ public class ChatService {
         return chatListResDtos;
     }
 
-    public void leaveGroupChat(Long roomId) {
+    public void leaveGroupChat(Member member, Long roomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 채팅방입니다"));
-        Member member = memberRepository.findByUserid(SecurityContextHolder.getContext().getAuthentication().getName())
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 유저입니다"));
 
         if(chatRoom.getIsGroupChat().equals("N")) {
             throw new IllegalArgumentException("단체 채팅방이 아닙니다");
@@ -229,9 +219,7 @@ public class ChatService {
         }
     }
 
-    public Long getOrCreatePrivateRoom(String otherMemberUserId) {
-        Member member = memberRepository.findByUserid(SecurityContextHolder.getContext().getAuthentication().getName())
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 유저입니다"));
+    public Long getOrCreatePrivateRoom(Member member, String otherMemberUserId) {
         Member otherMember = memberRepository.findByUserid(otherMemberUserId)
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 유저입니다"));
 

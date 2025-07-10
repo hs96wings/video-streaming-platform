@@ -51,7 +51,7 @@ public class AuthControllerTest {
                 .build();
 
         when(authService.create(any(SignupRequestDto.class))).thenReturn(savedMember);
-        when(jwtTokenProvider.createToken("testUser", "USER")).thenReturn("dummy-jwt-token");
+        when(jwtTokenProvider.createToken(savedMember)).thenReturn("dummy-jwt-token");
 
         // when & then
         mockMvc.perform(post("/api/auth/signup")
@@ -94,7 +94,7 @@ public class AuthControllerTest {
                 .build();
 
         when(authService.login(any(LoginRequestDto.class))).thenReturn(savedMember);
-        when(jwtTokenProvider.createToken("testUser", "USER")).thenReturn("dummy-jwt-token");
+        when(jwtTokenProvider.createToken(savedMember)).thenReturn("dummy-jwt-token");
 
         mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)

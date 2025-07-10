@@ -1,5 +1,7 @@
 package io.github.hs96wings.streaming_server.auth.jwt;
 
+import io.github.hs96wings.streaming_server.member.domain.Member;
+import io.github.hs96wings.streaming_server.member.domain.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -45,9 +47,21 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         .parseClaimsJws(jwt)
                         .getBody();
 
-                List<GrantedAuthority> auths = List.of(new SimpleGrantedAuthority("ROLE_" + claims.get("role")));
-                UserDetails userDetails = new User(claims.getSubject(), "", auths);
-                Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, auths);
+                Long id = claims.get("id", Long.class);
+                String username = claims.getSubject();
+                String roleStr = claims.get("role", String.class); // JWT에서 role 문자열 추출
+                Role role = Role.valueOf(roleStr);  // 문자열을 Role Enum으로 변환
+
+                // DB 조회 없이, JWT 정보로 Member 객체(Principal) 생성
+                // UserDetails를 구현했으므로 Member가 Principal이 될 수 있음
+                Member member = Member.builder()
+                        .id(id)
+                        .userid(username)
+                        .role(role)
+                        .build();
+                // Authentication 객체 생성 (Principal 자리에 Member 객체를 직접 넣음)
+                // member.getAuthorities()는 Member 클래스에 이미 구현된 메서드를 활용
+                Authentication auth = new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(auth);
             } catch (JwtException e) {
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());

@@ -1,5 +1,6 @@
 package io.github.hs96wings.streaming_server.auth.jwt;
 
+import io.github.hs96wings.streaming_server.member.domain.Member;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -22,9 +23,10 @@ public class JwtTokenProvider {
         this.SECRET_KEY = new SecretKeySpec(java.util.Base64.getDecoder().decode(secretKey), SignatureAlgorithm.HS512.getJcaName());
     }
 
-    public String createToken(String userid, String role) {
-        Claims claims = Jwts.claims().setSubject(userid);
-        claims.put("role", role);
+    public String createToken(Member member) {
+        Claims claims = Jwts.claims().setSubject(member.getUserid());
+        claims.put("id", member.getId());
+        claims.put("role", member.getRole());
         Date now = new Date();
         return Jwts.builder()
                 .setClaims(claims)

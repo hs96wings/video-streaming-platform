@@ -123,7 +123,12 @@ public class AuthServiceIntegrationTest {
     @DisplayName("토큰 유효성 검사")
     void validateToken_successHaveToken() throws Exception {
         // given
-        String token = jwtTokenProvider.createToken("testUser", "USER");
+        Member member = Member.builder()
+                .userid("testUser")
+                .password(passwordEncoder.encode("1234"))
+                .build();
+        memberRepository.save(member);
+        String token = jwtTokenProvider.createToken(member);
 
         mockMvc.perform(get("/api/auth/validate")
                 .header("Authorization", "Bearer " + token))
