@@ -3,7 +3,6 @@ package io.github.hs96wings.streaming_server.member.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.hs96wings.streaming_server.auth.controller.AuthController;
 import io.github.hs96wings.streaming_server.auth.jwt.JwtTokenProvider;
-import io.github.hs96wings.streaming_server.common.configs.SecurityConfigs;
 import io.github.hs96wings.streaming_server.member.domain.Member;
 import io.github.hs96wings.streaming_server.auth.dto.LoginRequestDto;
 import io.github.hs96wings.streaming_server.auth.dto.SignupRequestDto;
@@ -13,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -21,12 +19,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @WebMvcTest(AuthController.class)
-@Import(SecurityConfigs.class) // permitAll 규칙을 가져옴
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 public class AuthControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -53,13 +51,15 @@ public class AuthControllerTest {
                 .build();
 
         when(authService.create(any(SignupRequestDto.class))).thenReturn(savedMember);
+        when(jwtTokenProvider.createToken("testUser", "USER")).thenReturn("dummy-jwt-token");
 
         // when & then
-        mockMvc.perform(post("/member/create")
+        mockMvc.perform(post("/api/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(reqDto)))
                 .andExpect(status().isCreated())
-                .andExpect(content().string("1"));
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.token").value("dummy-jwt-token"));
     }
 
     @Test
@@ -74,7 +74,7 @@ public class AuthControllerTest {
 
 
         // when & then
-        mockMvc.perform(post("/member/create")
+        mockMvc.perform(post("/api/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(duplicateDto)))
                 .andExpect(status().isBadRequest())
@@ -96,11 +96,12 @@ public class AuthControllerTest {
         when(authService.login(any(LoginRequestDto.class))).thenReturn(savedMember);
         when(jwtTokenProvider.createToken("testUser", "USER")).thenReturn("dummy-jwt-token");
 
-        mockMvc.perform(post("/member/doLogin")
+        mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(loginRequestDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.token").value("dummy-jwt-token"));
+                .andExpect(jsonPath("$.token").value("dummy-jwt-token"))
+                .andDo(print());
     }
 }

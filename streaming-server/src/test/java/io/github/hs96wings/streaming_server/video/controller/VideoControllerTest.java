@@ -86,7 +86,6 @@ public class VideoControllerTest {
         dto.setVideoPath("/uploads/videos/test.mp4");
         dto.setThumbnailPath("/path/to/thumb.png");
         dto.setUploadedAt(LocalDateTime.of(2025, 5, 5, 12, 0));
-        dto.setVideoStatus(VideoStatus.UPLOADED);
 
         List<VideoResDto> videoResDtos = List.of(dto);
 
@@ -252,7 +251,6 @@ public class VideoControllerTest {
         dto.setVideoPath("/uploads/videos/test.mp4");
         dto.setThumbnailPath("/path/to/thumb.png");
         dto.setUploadedAt(LocalDateTime.of(2025, 5, 5, 12, 0));
-        dto.setVideoStatus(VideoStatus.READY);
 
         List<VideoResDto> videoResDtos = List.of(dto);
 
