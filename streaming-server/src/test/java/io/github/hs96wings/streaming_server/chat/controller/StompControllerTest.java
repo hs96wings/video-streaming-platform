@@ -1,6 +1,7 @@
 package io.github.hs96wings.streaming_server.chat.controller;
 
 import io.github.hs96wings.streaming_server.chat.dto.ChatMessageDto;
+import io.github.hs96wings.streaming_server.chat.service.ChatService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +18,8 @@ public class StompControllerTest {
     private StompController stompController;
     @Mock
     private SimpMessagingTemplate messagingTemplate;
+    @Mock
+    private ChatService chatService;
 
     @Test
     @DisplayName("전송한 메시지를 올바른 토픽에 전송")
