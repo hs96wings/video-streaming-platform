@@ -1,6 +1,7 @@
 package io.github.hs96wings.streaming_server.member.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.hs96wings.streaming_server.auth.jwt.JwtTokenProvider;
 import io.github.hs96wings.streaming_server.member.domain.Member;
 import io.github.hs96wings.streaming_server.auth.dto.LoginRequestDto;
 import io.github.hs96wings.streaming_server.auth.dto.SignupRequestDto;
@@ -26,7 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -44,6 +45,8 @@ public class AuthServiceIntegrationTest {
     MemberRepository memberRepository;
     @Autowired
     PasswordEncoder passwordEncoder;
+    @Autowired
+    JwtTokenProvider jwtTokenProvider;
 
     private SignupRequestDto dto;
     private static final Logger log = LoggerFactory.getLogger(AuthServiceIntegrationTest.class);
@@ -104,7 +107,7 @@ public class AuthServiceIntegrationTest {
         LoginRequestDto loginRequestDto = new LoginRequestDto("testUser", "1234");
 
         // when & then
-        MvcResult mvcResult = mockMvc.perform(post("/member/doLogin")
+        MvcResult mvcResult = mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(loginRequestDto)))
                 .andExpect(status().isOk())
@@ -114,5 +117,16 @@ public class AuthServiceIntegrationTest {
 
         String json = mvcResult.getResponse().getContentAsString();
         log.debug(json);
+    }
+
+    @Test
+    @DisplayName("토큰 유효성 검사")
+    void validateToken_successHaveToken() throws Exception {
+        // given
+        String token = jwtTokenProvider.createToken("testUser", "USER");
+
+        mockMvc.perform(get("/api/auth/validate")
+                .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
     }
 }
