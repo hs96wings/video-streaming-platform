@@ -77,6 +77,7 @@ public class VideoServiceIntegrationTest {
                 .videoPath("/path/video1.mp4")
                 .thumbnailPath("/thumb/video1.mp4")
                 .videoStatus(VideoStatus.READY)
+                .viewCount(0L)
                 .build();
         videoRepository.save(v1);
         Video v2 = Video.builder()
@@ -85,6 +86,7 @@ public class VideoServiceIntegrationTest {
                 .videoPath("/path/video2.mp4")
                 .thumbnailPath("/thumb/video2.mp4")
                 .videoStatus(VideoStatus.READY)
+                .viewCount(0L)
                 .build();
         videoRepository.save(v2);
 
@@ -123,7 +125,8 @@ public class VideoServiceIntegrationTest {
                 () -> assertThat(found.getVideoPath()).isEqualTo(uploaded.getVideoPath()),
                 () -> assertThat(found.getThumbnailPath()).isEqualTo(uploaded.getThumbnailPath()),
                 () -> assertThat(found.getUploadedAt()).isEqualTo(uploaded.getUploadedAt()),
-                () -> assertThat(found.getVideoStatus()).isEqualTo(uploaded.getVideoStatus())
+                () -> assertThat(found.getVideoStatus()).isEqualTo(uploaded.getVideoStatus()),
+                () -> assertThat(found.getViewCount()).isEqualTo(uploaded.getViewCount())
         );
     }
 
@@ -210,6 +213,7 @@ public class VideoServiceIntegrationTest {
                 .videoPath("/path/video1.mp4")
                 .thumbnailPath("/thumb/video1.mp4")
                 .videoStatus(VideoStatus.READY)
+                .viewCount(0L)
                 .build();
         videoRepository.save(v1);
         Video v2 = Video.builder()
@@ -218,6 +222,7 @@ public class VideoServiceIntegrationTest {
                 .videoPath("/path/video2.mp4")
                 .thumbnailPath("/thumb/video2.mp4")
                 .videoStatus(VideoStatus.READY)
+                .viewCount(0L)
                 .build();
         videoRepository.save(v2);
 
@@ -246,6 +251,7 @@ public class VideoServiceIntegrationTest {
                 .videoPath("/path/video1.mp4")
                 .thumbnailPath("/thumb/video1.mp4")
                 .videoStatus(VideoStatus.READY)
+                .viewCount(0L)
                 .build();
         videoRepository.save(v1);
         Video v2 = Video.builder()
@@ -254,6 +260,7 @@ public class VideoServiceIntegrationTest {
                 .videoPath("/path/video2.mp4")
                 .thumbnailPath("/thumb/video2.mp4")
                 .videoStatus(VideoStatus.READY)
+                .viewCount(0L)
                 .build();
         videoRepository.save(v2);
 
