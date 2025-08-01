@@ -2,6 +2,7 @@ package io.github.hs96wings.streaming_server.auth.jwt;
 
 import io.github.hs96wings.streaming_server.member.domain.Member;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,5 +54,18 @@ public class JwtTokenProvider {
                 .setExpiration(new Date(now.getTime() + validityMillis))
                 .signWith(SECRET_KEY)
                 .compact();
+    }
+
+    // 테스트용 헬퍼 메소드
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(SECRET_KEY)
+                    .build()
+                    .parseClaimsJws(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
     }
 }
