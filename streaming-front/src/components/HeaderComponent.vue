@@ -53,13 +53,13 @@
     </v-navigation-drawer>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useAuthStore } from '@/stores/auth';
 import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify'
 import { useNotificationStore } from '@/stores/notificationStore';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 // 반응형 네비게이션 드로어 상태
 const drawer = ref(false)
@@ -80,18 +80,30 @@ const isLogin = computed(() => auth.isLogin)
 const isAdmin = computed(() => auth.isAdmin)
 
 async function doLogout() {
+    // 채팅방에 있는 경우 읽음확인 처리
+    if (route.name === 'ChatPage') {
+        const roomId = route.params.roomId
+
+        if (typeof roomId === 'number') {
+            try {
+                await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/chat/room/${roomId}/read`)    
+            } catch (err: unknown) {
+                if (err instanceof AxiosError) {
+                    console.warn('읽음 처리 API 실패 (AxiosError):', err.response?.data)
+                } else {
+                    console.warn('읽음 처리 API 실패 (로그아웃 진행):', err)
+                }
+            }   
+        }       
+    } 
+    
+    // 기존 finally 블록은 항상 실행되어야 하므로 try-catch로 변경
     try {
-        // 채팅방에 있는 경우 읽음확인 처리
-        if (route.name === 'ChatPage') {
-            const roomId = route.params.roomId
-            await axios.post(`${process.env.VITE_API_BASE_URL}/api/chat/room/${roomId}/read`)
-        } 
-    } catch (err) {
-        console.warn('읽음 처리 실패 (로그아웃 진행)', err)
-    } finally {
         sseStore.disconnectSSE()
         auth.logout()
-        router.push('/')
+        await router.push('/')
+    } catch (e: unknown) {
+        console.error('로그아웃 및 리다이렉션 실패:', e)
     }
 }
 </script>

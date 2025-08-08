@@ -10,15 +10,21 @@
     </v-card>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue';
 
-const props = defineProps({
-    video: {
-        type: Object,
-        required: true
-    }
-})
+interface Video {
+    title: string,
+    viewCount: number,
+    thumbnailPath: string,
+    uploadedAt: string
+}
+
+interface Props {
+    video: Video
+}
+
+const props = defineProps<Props>()
 
 const formattedDate = computed(() => {
     const d = new Date(props.video.uploadedAt)
