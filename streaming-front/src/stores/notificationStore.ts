@@ -1,9 +1,21 @@
-import { defineStore } from "pinia";
-import { fetchEventSource } from "@microsoft/fetch-event-source";
-import { useAuthStore } from "./auth";
+import { defineStore } from "pinia"
+import { fetchEventSource, type EventSourceMessage } from "@microsoft/fetch-event-source"
+import { useAuthStore } from "./auth"
+
+interface Notification {
+    roomId: number,
+    unreadCount: number
+}
+
+interface NotificationState {
+    notifications: Notification[],
+    abortController: AbortController | null,
+    isConnected: boolean,
+    error: string | null
+}
 
 export const useNotificationStore = defineStore('notification', {
-    state: () => ({
+    state: (): NotificationState => ({
         notifications: [], // 수신된 알림 저장
         abortController: null, // SSE 연결을 끊기 위한 AbortController 인스턴스
         isConnected: false, // SSE 연결 상태
@@ -46,7 +58,7 @@ export const useNotificationStore = defineStore('notification', {
                         'Accept': 'text/event-stream' // SSE 요청임을 명시
                     },
                     // 연결이 열렸을 때 호출됨
-                    onopen: async (response) => {
+                    onopen: async (response: Response) => {
                         if (response.ok && response.headers.get('content-type')?.includes('text/event-stream')) {
                             this.isConnected = true
                             this.error = null
@@ -64,11 +76,12 @@ export const useNotificationStore = defineStore('notification', {
                         }
                     },
                     // 메시지가 수신될 때마다 호출
-                    onmessage: (event) => {
+                    onmessage: (event: EventSourceMessage) => {
                         console.log('SSE 메시지 수신:', event.data)
                         try {
-                            const data = JSON.parse(event.data)
-                            this.notifications.push(data) // 알림 배열에 추가
+                            // event.data의 타입을 Notification으로 파싱
+                            const newNotification: Notification = JSON.parse(event.data)
+                            this.notifications.push(newNotification) // 알림 배열에 추가
                         } catch (e) {
                             console.error('SSE 메시지 파싱 실패:', e)
                         }
@@ -79,20 +92,20 @@ export const useNotificationStore = defineStore('notification', {
                         console.log('SSE 연결 종료됨.')
                     },
                     // 에러 발생 시 호출
-                    onerror: (err) => {
+                    onerror: (err: any) => {
                         this.isConnected = false
                         this.error = 'SSE 연결 오류: ' + err.message
                         console.error('SSE 연결 중 오류 발생:', err)
-                        return true
+                        this.disconnectSSE()
                     }
                 });
-            } catch (e) {
+            } catch (e: unknown) {
                 // 사용자가 의도적으로 연결을 끊었을 때 발생하는 AbortError는 무시
-                if (e.name === 'AbortError') {
+                if (e instanceof Error && e.name === 'AbortError') {
                     console.log('SSE 연결이 사용자 요청으로 중단되었습니다')
                 } else {
                     this.isConnected = false
-                    this.error = 'SSE 연결 시작 실패: ' + e.message
+                    this.error = 'SSE 연결 시작 실패'
                     console.error('SSE 연결 시작 중 예외 발생:', e)
                 }
             }
