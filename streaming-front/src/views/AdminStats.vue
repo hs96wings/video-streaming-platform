@@ -76,7 +76,7 @@ const fetchAndSetChartData = async (): Promise<void> => {
   }
 };
 
-onMounted(async () => {
+onMounted(async (): Promise<void> => {
   fetchAndSetChartData();
 });
 </script>

@@ -29,7 +29,7 @@ const videoList = ref<Video[]>([]);
 const searchKeyword = ref<string>('');
 const isLoading = ref<boolean>(true);
 
-onMounted(async () => {
+onMounted(async (): Promise<void> => {
   isLoading.value = true;
   try {
     const data = await api.get(`/api/video/list`);
@@ -39,11 +39,11 @@ onMounted(async () => {
   }
 });
 
-function goToVideo(id: number) {
+function goToVideo(id: number): void {
   router.push(`/video/${id}`);
 }
 
-async function searchVideos() {
+async function searchVideos(): Promise<void> {
   try {
     if (searchKeyword.value.trim() === '') {
       const data = await api.get(`/api/video/list`);

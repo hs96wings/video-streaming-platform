@@ -106,7 +106,7 @@ function formatDate(datetime: string): string {
   return `${yyyy}.${mm}.${dd} ${hh}:${mi}:${ss}`;
 }
 
-async function fetchVideoAndComments() {
+async function fetchVideoAndComments(): Promise<void> {
   if (!id) return;
   isLoading.value = true;
 
@@ -129,7 +129,7 @@ async function fetchVideoAndComments() {
   }
 }
 
-async function postComment() {
+async function postComment(): Promise<void> {
   if (!id || !newComment.value.trim()) return;
 
   await api.post(`/api/comment`, {
@@ -141,23 +141,23 @@ async function postComment() {
   await fetchComments();
 }
 
-async function deleteComment(commentId: number) {
+async function deleteComment(commentId: number): Promise<void> {
   await api.delete(`/api/comment/${commentId}`);
   await fetchComments();
 }
 
-async function fetchComments() {
+async function fetchComments(): Promise<void> {
   if (!id) return;
 
   const data = await api.get(`/api/comment/${id}`);
   comments.value = data;
 }
 
-function goToBack() {
+function goToBack(): void {
   router.push('/list');
 }
 
-onMounted(async () => {
+onMounted(async (): Promise<void> => {
   await fetchVideoAndComments();
 
   const video = hlsPlayer.value;
@@ -176,12 +176,12 @@ onMounted(async () => {
   }
 });
 
-function openPrivateChatModal(userId: string) {
+function openPrivateChatModal(userId: string): void {
   targetUserId.value = userId;
   showCreatePrivateRoomModal.value = true;
 }
 
-async function createPrivateChatRoom() {
+async function createPrivateChatRoom(): Promise<void> {
   const data = await api.post(`/api/chat/room/private/create?otherMemberUserId=${targetUserId.value}`);
   router.push(`/chat/${data}`);
 }

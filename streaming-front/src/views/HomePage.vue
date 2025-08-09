@@ -51,7 +51,7 @@ const loadVideos = async (
   videoRef: Ref<Video[]>,
   loadingRef: Ref<boolean>,
   errorContext: string
-) => {
+): Promise<void> => {
   loadingRef.value = true;
   try {
     const data = await api.get<Video[]>(apiEndpoint);
@@ -64,7 +64,7 @@ const loadVideos = async (
   }
 };
 
-onMounted(async () => {
+onMounted(async (): Promise<void> => {
   await Promise.all([
     loadVideos('/api/video/popular', popularVideos, isLoadingPopular, '인기 영상'),
     loadVideos('/api/video/latest', latestVideos, isLoadingLatest, '최신 영상'),

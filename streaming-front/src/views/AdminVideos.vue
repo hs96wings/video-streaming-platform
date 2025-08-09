@@ -59,16 +59,16 @@ function formatDate(datetime: string | Date): string {
   return `${yyyy}.${mm}.${dd} ${hh}:${mi}:${ss}`;
 }
 
-onMounted(async () => {
+onMounted(async (): Promise<void> => {
   const data = await api.get('/api/video/admin');
   videoList.value = data;
 });
 
-function goToVideo(id: number) {
+function goToVideo(id: number): void {
   router.push(`/video/${id}`);
 }
 
-async function deleteVideo(id: number) {
+async function deleteVideo(id: number): Promise<void> {
   await api.delete(`/api/video/${id}`);
   videoList.value = videoList.value.filter((v) => v.id !== id);
 }
