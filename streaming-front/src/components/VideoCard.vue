@@ -19,13 +19,11 @@ const props = defineProps<Props>();
 const formattedDate = computed(() => {
   const datetime = props.video.uploadedAt;
 
-  if (!Array.isArray(datetime) || datetime.length < 6) {
-    console.error('올바른 날짜 형식이 아닙니다:', datetime);
-    return '날짜 형식 오류';
+  if (!datetime) {
+    return '날짜 정보 없음';
   }
 
-  const [year, month, day, hour, minute, second, nanoseconds] = datetime;
-  const date = new Date(year, month - 1, day, hour, minute, second, Math.floor(nanoseconds / 1000000));
+  const date = new Date(datetime);
 
   if (isNaN(date.getTime())) {
     return '유효하지 않은 날짜';

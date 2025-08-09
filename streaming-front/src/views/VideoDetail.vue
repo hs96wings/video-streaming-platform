@@ -85,17 +85,12 @@ const isLoading = ref<boolean>(true);
 const showCreatePrivateRoomModal = ref<boolean>(false);
 const targetUserId = ref<string>('');
 
-function formatDate(datetime: any): string {
-  // 백엔드에서 LocalDateTime 같은 날짜 객체를 별도 설정 없이 JSON으로 변환 중
-  // 입력값이 배열이 아니거나, 날짜 정보를 담기에 길이가 충분하지 않으면 에러 처리
-  if (!Array.isArray(datetime) || datetime.length < 6) {
-    console.error('올바른 날짜 형식이 아닙니다:', datetime);
-    return '날짜 형식 오류';
+function formatDate(datetime: string): string {
+  if (!datetime) {
+    return '날짜 정보 없음';
   }
 
-  const [year, month, day, hour, minute, second, nanoseconds] = datetime;
-
-  const date = new Date(year, month - 1, day, hour, minute, second, Math.floor(nanoseconds / 1000000));
+  const date = new Date(datetime);
 
   if (isNaN(date.getTime())) {
     return '유효하지 않은 날짜';
