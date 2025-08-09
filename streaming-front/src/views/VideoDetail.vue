@@ -67,6 +67,7 @@ import Hls from 'hls.js';
 import { useAuthStore } from '@/stores/auth';
 import { storeToRefs } from 'pinia';
 import type { Video, Comment } from '@/types/api';
+import { formatDate } from '@/utils/date';
 
 const route = useRoute();
 const router = useRouter();
@@ -84,27 +85,6 @@ const isLoading = ref<boolean>(true);
 
 const showCreatePrivateRoomModal = ref<boolean>(false);
 const targetUserId = ref<string>('');
-
-function formatDate(datetime: string): string {
-  if (!datetime) {
-    return '날짜 정보 없음';
-  }
-
-  const date = new Date(datetime);
-
-  if (isNaN(date.getTime())) {
-    return '유효하지 않은 날짜';
-  }
-
-  const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, '0');
-  const dd = String(date.getDate()).padStart(2, '0');
-  const hh = String(date.getHours()).padStart(2, '0');
-  const mi = String(date.getMinutes()).padStart(2, '0');
-  const ss = String(date.getSeconds()).padStart(2, '0');
-
-  return `${yyyy}.${mm}.${dd} ${hh}:${mi}:${ss}`;
-}
 
 async function fetchVideoAndComments(): Promise<void> {
   if (!id) return;
