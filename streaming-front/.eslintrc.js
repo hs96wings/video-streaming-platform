@@ -1,9 +1,8 @@
 module.exports = {
   root: true, // 상위 폴더 ESlint 설정 무시
   env: {
-    browser: true,
-    es2021: true,
     node: true,
+    'vue/setup-compiler-macros': true,
   },
   parser: 'vue-eslint-parser', // Vue 파일 인식
   parserOptions: {
@@ -22,7 +21,7 @@ module.exports = {
   extends: [
     'eslint:recommended',
     'plugin:vue/vue3-recommended',
-    'plugin:@typescript-eslint/recommended',
+    '@vue/typescript/recommended',
     'plugin:prettier/recommended', // prettier 규칙 연동
   ],
   rules: {

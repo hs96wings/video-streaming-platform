@@ -31,56 +31,53 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, type Ref } from 'vue';
 import VideoCard from '@/components/VideoCard.vue';
 import api from '@/api/axios';
 import { useRouter } from 'vue-router';
 import { useSnackbarStore } from '@/stores/snackbarStore';
+import type { Video } from '@/types/api';
 
 const router = useRouter();
-
-const popularVideos = ref([]);
-const latestVideos = ref([]);
-
-const isLoadingPopular = ref(true);
-const isLoadingLatest = ref(true);
-
 const snackbarStore = useSnackbarStore();
 
-const loadPopularVideos = async () => {
-  isLoadingPopular.value = true;
-  try {
-    const { data } = await api.get(`/api/video/popular`);
-    popularVideos.value = data;
-  } catch (err) {
-    console.error('🔥 인기 영상 로딩 실패', err);
-    snackbarStore.showSnackbar('인기 영상 로딩에 실패했습니다', 'warning');
-  } finally {
-    isLoadingPopular.value = false;
-  }
-};
+const popularVideos = ref<Video[]>([]);
+const latestVideos = ref<Video[]>([]);
 
-const loadLatestVideos = async () => {
-  isLoadingLatest.value = true;
+const isLoadingPopular = ref<boolean>(true);
+const isLoadingLatest = ref<boolean>(true);
+
+// 재사용을 위한 범용 로딩 함수
+const loadVideos = async (
+  apiEndpoint: string,
+  videoRef: Ref<Video[]>,
+  loadingRef: Ref<boolean>,
+  errorContext: string
+) => {
+  loadingRef.value = true;
   try {
-    const { data } = await api.get(`/api/video/latest`);
-    latestVideos.value = data;
-  } catch (err) {
-    console.error('🆕 최신 영상 로딩 실패', err);
-    snackbarStore.showSnackbar('최신 영상 로딩에 실패했습니다', 'warning');
+    const data = await api.get<Video[]>(apiEndpoint);
+    videoRef.value = data;
+  } catch (err: unknown) {
+    console.error(`🔥 ${errorContext} 로딩 실패`, err);
+    snackbarStore.showSnackbar(`${errorContext} 로딩에 실패했습니다.`, 'warning');
   } finally {
-    isLoadingLatest.value = false;
+    loadingRef.value = false;
   }
 };
 
 onMounted(async () => {
-  loadPopularVideos();
-  loadLatestVideos();
+  await Promise.all([
+    loadVideos('/api/video/popular', popularVideos, isLoadingPopular, '인기 영상'),
+    loadVideos('/api/video/latest', latestVideos, isLoadingLatest, '최신 영상'),
+  ]);
 
-  await api.post(`/api/log/visit`);
+  await api.post(`/api/log/visit`).catch((err) => {
+    console.error('방문 로그 기록 실패', err);
+  });
 });
 
-function goToVideo(id) {
+function goToVideo(id: number) {
   router.push(`/video/${id}`);
 }
 </script>

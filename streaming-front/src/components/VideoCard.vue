@@ -8,13 +8,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-
-interface Video {
-  title: string;
-  viewCount: number;
-  thumbnailPath: string;
-  uploadedAt: string;
-}
+import type { Video } from '@/types/api';
 
 interface Props {
   video: Video;

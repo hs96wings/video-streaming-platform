@@ -35,3 +35,14 @@ export interface LoginResponse {
 export interface SignupResponse {
   token: string;
 }
+
+export interface Video {
+  id: number;
+  title: string;
+  description: string;
+  videoPath: string;
+  thumbnailPath: string;
+  uploadedAt: string;
+  videoStatus: 'UPLOADED' | 'PROCESSING' | 'READY';
+  viewCount: number;
+}

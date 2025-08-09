@@ -25,7 +25,7 @@ onMounted(async () => {
   videoList.value = data;
 });
 
-function goToVideo(id) {
+function goToVideo(id: number) {
   router.push(`/video/${id}`);
 }
 
