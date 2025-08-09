@@ -3,9 +3,8 @@
     <h2 class="text-h5 my-4">🔥 인기 영상</h2>
     <v-row>
       <template v-if="isLoadingPopular">
-        <v-cols cols="12" sm="6" md="4" v-for="n in 3" :key="n">
-          <v-skeleton-loader type="image, card" />
-        </v-cols>
+        <v-progress-circular indeterminate color="primary" :size="70"></v-progress-circular>
+        <p class="mt-4">영상을 불러오는 중입니다...</p>
       </template>
       <template v-else>
         <v-col cols="12" sm="6" md="4" v-for="video in popularVideos" :key="video.id" @click="goToVideo(video.id)">
@@ -17,9 +16,8 @@
     <h2 class="text-h5 my-4">🆕 최신 업로드</h2>
     <v-row>
       <template v-if="isLoadingLatest">
-        <v-cols cols="12" sm="6" md="4" v-for="n in 3" :key="n">
-          <v-skeleton-loader type="image, card" />
-        </v-cols>
+        <v-progress-circular indeterminate color="primary" :size="70"></v-progress-circular>
+        <p class="mt-4">영상을 불러오는 중입니다...</p>
       </template>
       <template v-else>
         <v-col cols="12" sm="6" md="4" v-for="video in latestVideos" :key="video.id" @click="goToVideo(video.id)">
