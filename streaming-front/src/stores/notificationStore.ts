@@ -8,7 +8,6 @@ interface Notification {
 }
 
 interface NotificationState {
-  notifications: Notification[];
   abortController: AbortController | null;
   isConnected: boolean;
   error: string | null;
@@ -16,13 +15,12 @@ interface NotificationState {
 
 export const useNotificationStore = defineStore('notification', {
   state: (): NotificationState => ({
-    notifications: [], // 수신된 알림 저장
     abortController: null, // SSE 연결을 끊기 위한 AbortController 인스턴스
     isConnected: false, // SSE 연결 상태
     error: null, // 연결 오류 메시지
   }),
   actions: {
-    async connectSSE() {
+    async connectSSE(onUnreadCount: (notification: Notification) => void) {
       // 이미 연결되어 있다면 다시 시도하지 않음
       if (this.isConnected && this.abortController) {
         console.warn('SSE is already connected.');
@@ -50,13 +48,12 @@ export const useNotificationStore = defineStore('notification', {
 
       try {
         await fetchEventSource(sseUrl, {
-          // AbortController의 signal을 fetchEventSource에 전달하여 연결 제어
           signal: controller.signal,
-          // Authorization 헤더에 인증 토큰 포함
           headers: {
             Authorization: `Bearer ${accessToken}`,
             Accept: 'text/event-stream', // SSE 요청임을 명시
           },
+          openWhenHidden: true,
           // 연결이 열렸을 때 호출됨
           onopen: async (response: Response) => {
             if (response.ok && response.headers.get('content-type')?.includes('text/event-stream')) {
@@ -76,14 +73,28 @@ export const useNotificationStore = defineStore('notification', {
             }
           },
           // 메시지가 수신될 때마다 호출
-          onmessage: (event: EventSourceMessage) => {
-            console.log('SSE 메시지 수신:', event.data);
-            try {
-              // event.data의 타입을 Notification으로 파싱
-              const newNotification: Notification = JSON.parse(event.data);
-              this.notifications.push(newNotification); // 알림 배열에 추가
-            } catch (e) {
-              console.error('SSE 메시지 파싱 실패:', e);
+          onmessage: (msg: EventSourceMessage) => {
+            console.log('>>> RAW SSE MESSAGE RECEIVED:', msg);
+            // 이벤트 종류(이름)에 따라 다르게 처리
+            switch (msg.event) {
+              case 'connect':
+                console.log('SSE 이벤트 수신: connect');
+                break;
+              case 'heartbeat':
+                // console.log('SSE 이벤트 수신: heartbeat'); // 45초마다 찍히므로 주석 처리
+                break;
+              case 'unreadCount':
+                console.log('SSE 이벤트 수신: unreadCount, 데이터:', msg.data);
+                try {
+                  const newNotification: Notification = JSON.parse(msg.data);
+                  onUnreadCount(newNotification);
+                } catch (e: unknown) {
+                  console.error('unreadCount 메시지 파싱 실패:', e);
+                }
+                break;
+              default:
+                console.log('이름 없는 SSE 메시지 수신:', msg.data);
+                break;
             }
           },
           // 연결이 닫혔을 때 호출
@@ -119,11 +130,6 @@ export const useNotificationStore = defineStore('notification', {
         this.isConnected = false;
         console.log('SSE 연결을 끊었습니다');
       }
-    },
-
-    // 알림 목록을 초기화하는 액션
-    clearNotifications() {
-      this.notifications = [];
     },
   },
 });

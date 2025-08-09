@@ -57,5 +57,7 @@ export interface Comment {
 export interface ChatRoom {
   id: number;
   roomId: number;
+  isGroupChat: string;
   roomName: string;
+  unReadCount: number;
 }

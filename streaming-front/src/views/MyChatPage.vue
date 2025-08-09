@@ -35,54 +35,48 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import api from '@/api/axios';
 import { useNotificationStore } from '@/stores/notificationStore';
+import type { ChatRoom } from '@/types/api';
+import { useSnackbarStore } from '@/stores/snackbarStore';
 
 const router = useRouter();
-const chatList = ref([]);
+const chatList = ref<ChatRoom[]>([]);
 const notificationStore = useNotificationStore();
+const snackBar = useSnackbarStore();
 
-onMounted(async () => {
-  const { data } = await api.get(`/api/chat/my/rooms`);
-  chatList.value = data;
+onMounted(async (): Promise<void> => {
+  try {
+    const data = await api.get<ChatRoom[]>(`/api/chat/my/rooms`);
+    chatList.value = data;
+  } catch (err: unknown) {
+    snackBar.showSnackbar('채팅방 목록 조회에 실패했습니다', 'error');
+  }
 
-  // 컴포넌트 마운트 시 SSE 연결 시도
-  notificationStore.connectSSE();
+  // connectSSE 호출 시, 메시지를 받았을 때 실행할 함수를 직접 전달
+  notificationStore.connectSSE((notification) => {
+    const targetChat = chatList.value.find((chat) => chat.roomId === notification.roomId);
+    if (targetChat) {
+      targetChat.unReadCount = notification.unreadCount;
+    }
+  });
 });
 
 onUnmounted(() => {
   notificationStore.disconnectSSE();
 });
 
-// 배열의 변화를 감지
-watch(
-  () => notificationStore.notifications,
-  (newNotification) => {
-    // 새 알림이 도착하면 (배열에 추가될 때마다)
-    if (newNotification.length > 0) {
-      // 마지막으로 추가된 알림을 가져옴 (또는 모든 새 알림을 순회)
-      const lastestNotification = newNotification[newNotification.length - 1];
-
-      // chatList에서 해당 roomId를 가진 채팅방을 찾아 unReadCount 업데이트
-      const targetChat = chatList.value.find((chat) => chat.roomId === lastestNotification.roomId);
-      if (targetChat) {
-        targetChat.unReadCount = lastestNotification.unreadCount;
-      }
-
-      // 알림을 처리했으면 Pinia 스토어의 notifications 배열에서 해당 알림 제거
-      notificationStore.notifications.pop();
-    }
-  },
-  { deep: true }
-); // 객체 내부 변화 감지를 위해 deep: true 설정
-
-function enterChatRoom(roomId) {
+function enterChatRoom(roomId: number): void {
   router.push(`/chat/${roomId}`);
 }
 
-async function leaveChatRoom(roomId) {
-  await api.delete(`/api/chat/room/group/${roomId}/leave`);
-  chatList.value = chatList.value.filter((c) => c.roomId !== roomId);
+async function leaveChatRoom(roomId: number): Promise<void> {
+  try {
+    await api.delete(`/api/chat/room/group/${roomId}/leave`);
+    chatList.value = chatList.value.filter((c) => c.roomId !== roomId);
+  } catch (err: unknown) {
+    snackBar.showSnackbar('채팅방 삭제에 실패했습니다', 'error');
+  }
 }
 </script>
