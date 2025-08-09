@@ -30,7 +30,7 @@ const password = ref<string>('');
 const router = useRouter();
 const auth = useAuthStore();
 
-async function doLogin() {
+async function doLogin(): Promise<void> {
   try {
     const loginData: LoginRequest = {
       userid: userid.value,

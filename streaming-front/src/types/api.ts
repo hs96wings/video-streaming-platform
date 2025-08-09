@@ -36,6 +36,11 @@ export interface SignupResponse {
   token: string;
 }
 
+export interface UploadRequest {
+  title: string;
+  description: string;
+}
+
 export interface Video {
   id: number;
   title: string;

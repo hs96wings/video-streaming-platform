@@ -14,46 +14,69 @@ import {
   PointElement,
   CategoryScale,
   LinearScale,
+  type ChartData,
+  type ChartOptions,
 } from 'chart.js';
 import api from '@/api/axios';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import { useRouter } from 'vue-router';
+import { isAxiosError } from 'axios';
+
+interface DailyVisitStat {
+  date: string;
+  uniqueVisitorCount: number;
+}
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale);
 
-const visitStats = ref([]);
-const chartData = ref({ labels: [], datasets: [] });
-const chartOptions = { responsive: true, plugins: { legend: { display: true } } };
+const chartData = ref<ChartData<'line'>>({ labels: [], datasets: [] });
+const chartOptions: ChartOptions<'line'> = {
+  responsive: true,
+  plugins: {
+    legend: {
+      display: true,
+      position: 'top',
+    },
+    title: {
+      display: true,
+      text: '일별 방문자 수 추이',
+    },
+  },
+};
+
 const snackBar = useSnackbarStore();
 const router = useRouter();
 
-onMounted(async () => {
+const fetchAndSetChartData = async (): Promise<void> => {
   try {
-    const response = await api.get(`/api/admin/stats/visits/daily`);
-    if (Array.isArray(response.data)) {
-      visitStats.value = response.data;
-    } else {
-      console.warn('관리자 통계 응답이 배열이 아님:', response.data);
-      visitStats.value = [];
-    }
-  } catch (err) {
-    console.err('API 요청 실패:', err);
-    if (err.response?.status === 403) {
-      snackBar.showSnackbar('권한이 없습니다. 다시 로그인해주세요', 'waring');
+    const visitStats = await api.get<DailyVisitStat[]>(`/api/admin/stats/visits/daily`);
+
+    chartData.value = {
+      labels: visitStats.map((item) => item.date),
+      datasets: [
+        {
+          label: '일별 방문자 수',
+          data: visitStats.map((item) => item.uniqueVisitorCount),
+          borderColor: '#42A5F5',
+          backgroundColor: 'rgba(66, 165, 245, 0.2)',
+          tension: 0.3,
+          fill: true,
+        },
+      ],
+    };
+  } catch (err: unknown) {
+    console.error('API 요청 실패:', err);
+
+    if (isAxiosError(err) && err.response?.status === 403) {
+      snackBar.showSnackbar('권한이 없습니다. 다시 로그인 해주세요.', 'warning');
       router.push('/login');
+    } else {
+      snackBar.showSnackbar('통계 데이터를 불러오는 데 실패했습니다.', 'error');
     }
   }
+};
 
-  chartData.value = {
-    labels: visitStats.value.map((item) => item.date),
-    datasets: [
-      {
-        label: '일별 방문자 수',
-        data: visitStats.value.map((item) => item.uniqueVisitorCount),
-        tension: 0.3,
-        fill: true,
-      },
-    ],
-  };
+onMounted(async () => {
+  fetchAndSetChartData();
 });
 </script>

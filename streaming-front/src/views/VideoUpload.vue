@@ -29,21 +29,36 @@ const title = ref<string>('');
 const description = ref<string>('');
 const file = ref<File | null>(null);
 
-function onFileChange(e) {
-  file.value = e.target.files[0];
+function onFileChange(e: Event): void {
+  const target = e.target as HTMLInputElement;
+
+  if (target.files && target.files.length > 0) {
+    file.value = target.files[0];
+  } else {
+    file.value = null;
+  }
 }
 
-async function upload() {
+async function upload(): Promise<void> {
+  if (!file.value) {
+    alert('업로드할 파일을 선택해주세요');
+    return;
+  }
+
   const formData = new FormData();
   formData.append('title', title.value);
   formData.append('description', description.value);
   formData.append('file', file.value);
 
   try {
-    await api.post(`/api/video/upload`, formData);
+    await api.post(`/api/video/upload`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     router.push('/admin');
   } catch (err: unknown) {
-    console.log(`업로드 실패: ${err} ${formData}`);
+    console.error('업로드 실패:', err);
   }
 }
 </script>

@@ -21,23 +21,28 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '@/api/axios';
+import type { UploadRequest } from '@/types/api';
 
 const route = useRoute();
 const router = useRouter();
 
-const id = route.params.id;
-const title = ref('');
-const description = ref('');
+const idParam = route.params.id;
+const id = Array.isArray(idParam) ? idParam[0] : idParam;
+const title = ref<string>('');
+const description = ref<string>('');
 
-async function update() {
-  const videoData = { title: title.value, description: description.value };
+async function update(): Promise<void> {
+  const videoData: UploadRequest = {
+    title: title.value,
+    description: description.value,
+  };
   await api.patch(`/api/video/${id}`, videoData);
   router.push('/admin');
 }
 
-onMounted(async () => {
-  const res = await api.get(`/api/video/${id}`);
-  title.value = res.data.title;
-  description.value = res.data.description;
+onMounted(async (): Promise<void> => {
+  const data = await api.get(`/api/video/${id}`);
+  title.value = data.title;
+  description.value = data.description;
 });
 </script>
