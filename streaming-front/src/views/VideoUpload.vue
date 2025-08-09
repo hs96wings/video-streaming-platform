@@ -25,9 +25,9 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
-const title = ref('');
-const description = ref('');
-const file = ref(null);
+const title = ref<string>('');
+const description = ref<string>('');
+const file = ref<File | null>(null);
 
 function onFileChange(e) {
   file.value = e.target.files[0];
@@ -42,8 +42,8 @@ async function upload() {
   try {
     await api.post(`/api/video/upload`, formData);
     router.push('/admin');
-  } catch (err) {
-    console.log(`업로드 실패: ${err.response.data} ${formData}`);
+  } catch (err: unknown) {
+    console.log(`업로드 실패: ${err} ${formData}`);
   }
 }
 </script>

@@ -53,3 +53,9 @@ export interface Comment {
   content: string;
   createdAt: string;
 }
+
+export interface ChatRoom {
+  id: number;
+  roomId: number;
+  roomName: string;
+}

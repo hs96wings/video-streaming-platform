@@ -26,24 +26,31 @@
 
 <script setup lang="ts">
 import { ref, nextTick, onBeforeUnmount, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter, type NavigationGuardNext, type RouteLocationNormalized } from 'vue-router';
 import SockJS from 'sockjs-client';
-import { Client } from '@stomp/stompjs';
+import { Client, type IMessage } from '@stomp/stompjs';
 import { useAuthStore } from '@/stores/auth';
 import { onBeforeRouteLeave } from 'vue-router';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import api from '@/api/axios';
+import axios from 'axios';
+
+interface ChatMessage {
+  senderUserid: string | null;
+  message: string;
+}
 
 const auth = useAuthStore();
 const route = useRoute();
 const router = useRouter();
-const token = auth.token;
 const snackBar = useSnackbarStore();
 
-const messages = ref([]);
-const newMessage = ref('');
-const chatBox = ref(null);
-const roomId = ref(route.params.roomId);
+const token: string | null = auth.token;
+
+const messages = ref<ChatMessage[]>([]);
+const newMessage = ref<string>('');
+const chatBox = ref<HTMLElement | null>(null);
+const roomId = ref<string>(route.params.roomId as string);
 
 // 1. STOMP 클라이언트 생성
 const stompClient = new Client({
@@ -54,12 +61,12 @@ const stompClient = new Client({
 });
 
 // 3. 연결 후 콜백
-stompClient.onConnect = () => {
+stompClient.onConnect = (): void => {
   // 구독
   stompClient.subscribe(
     `/topic/${roomId.value}`,
-    (message) => {
-      const parseMessage = JSON.parse(message.body);
+    (message: IMessage) => {
+      const parseMessage: ChatMessage = JSON.parse(message.body);
       messages.value.push(parseMessage);
       scrollToBottom();
     },
@@ -71,23 +78,28 @@ stompClient.onConnect = () => {
 
 stompClient.activate();
 
-onMounted(async () => {
+onMounted(async (): Promise<void> => {
   try {
-    const { data } = await api.get(`${import.meta.env.VITE_API_BASE_URL}/api/chat/history/${roomId.value}`);
+    const data = await api.get(`/api/chat/history/${roomId.value}`);
     messages.value = data;
   } catch (err: unknown) {
-    if (err.response && err.response.status === 403) {
-      snackBar.showSnackbar('로그인이 필요합니다', 'warning');
-      router.replace('/login');
+    if (axios.isAxiosError(err) && err.response) {
+      if (err.response.status === 403) {
+        snackBar.showSnackbar('로그인이 필요합니다', 'warning');
+        router.replace('/login');
+      } else {
+        snackBar.showSnackbar('문제가 발생했습니다', 'error');
+      }
     } else {
-      snackBar.showSnackbar('문제가 발생했습니다', 'error');
+      snackBar.showSnackbar('알 수 없는 문제가 발생했습니다', 'error');
     }
   }
 });
 
-function sendMessage() {
+function sendMessage(): void {
   if (newMessage.value.trim() === '') return;
-  const message = {
+
+  const message: ChatMessage = {
     senderUserid: auth.username,
     message: newMessage.value.trim(),
   };
@@ -98,7 +110,7 @@ function sendMessage() {
   newMessage.value = '';
 }
 
-function scrollToBottom() {
+function scrollToBottom(): void {
   nextTick(() => {
     if (chatBox.value) {
       chatBox.value.scrollTop = chatBox.value.scrollHeight;
@@ -106,28 +118,29 @@ function scrollToBottom() {
   });
 }
 
-onBeforeUnmount(async () => {
-  if (auth.token) {
-    try {
-      await api.post(`/api/chat/room/${roomId.value}/read`);
-    } catch (err) {
-      console.warn('읽음 처리 실패 (onBeforeUnmount)', err);
-    }
-  }
-  stompClient.deactivate();
+onBeforeUnmount(async (): Promise<void> => {
+  await LeaveRoom();
 });
 
-onBeforeRouteLeave(async (to, from, next) => {
+onBeforeRouteLeave(
+  async (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext): Promise<void> => {
+    await LeaveRoom();
+    next();
+  }
+);
+
+async function LeaveRoom(): Promise<void> {
   if (auth.token) {
     try {
       await api.post(`/api/chat/room/${roomId.value}/read`);
-    } catch (err) {
+    } catch (err: unknown) {
       console.warn('읽음 처리 실패 (onBeforeRouteLeave)', err);
     }
   }
-  stompClient.deactivate();
-  next();
-});
+  if (stompClient.active) {
+    stompClient.deactivate();
+  }
+}
 </script>
 
 <style>

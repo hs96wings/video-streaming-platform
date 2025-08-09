@@ -51,29 +51,49 @@
 import { useRouter } from 'vue-router';
 import { ref, onMounted } from 'vue';
 import api from '@/api/axios';
+import type { ChatRoom } from '@/types/api';
+import { useSnackbarStore } from '@/stores/snackbarStore';
 
 const router = useRouter();
-const showCreateRoomModal = ref(false);
-const newRoomTitle = ref('');
-const chatList = ref([]);
+const snackBar = useSnackbarStore();
+const showCreateRoomModal = ref<boolean>(false);
+const newRoomTitle = ref<string>('');
+const chatList = ref<ChatRoom[]>([]);
 
-onMounted(async () => {
-  loadChatRoom();
+onMounted(async (): Promise<void> => {
+  await loadChatRoom();
 });
 
-async function joinChatRoom(roomId) {
-  await api.post(`/api/chat/room/group/${roomId}/join`);
-  router.push(`/chat/${roomId}`);
+async function joinChatRoom(roomId: number): Promise<void> {
+  try {
+    await api.post(`/api/chat/room/group/${roomId}/join`);
+    router.push(`/chat/${roomId}`);
+  } catch (err: unknown) {
+    snackBar.showSnackbar(`${roomId}번 채팅방 참여에 실패했습니다`, 'error');
+  }
 }
 
-async function createChatRoom() {
-  await api.post(`/api/chat/room/group/create?roomName=${newRoomTitle.value}`, null);
-  showCreateRoomModal.value = false;
-  loadChatRoom();
+async function createChatRoom(): Promise<void> {
+  if (!newRoomTitle.value.trim()) {
+    alert('채팅방 제목을 입력해주세요');
+    return;
+  }
+  try {
+    await api.post(`/api/chat/room/group/create?roomName=${newRoomTitle.value}`, null);
+    showCreateRoomModal.value = false;
+    newRoomTitle.value = ''; // 성공 시 입력값 초기화
+    await loadChatRoom();
+  } catch (err: unknown) {
+    snackBar.showSnackbar('채팅방 생성에 실패했습니다', 'error');
+  }
 }
 
-async function loadChatRoom() {
-  const { data } = await api.get(`/api/chat/room/group/list`);
-  chatList.value = data;
+async function loadChatRoom(): Promise<void> {
+  try {
+    const data = await api.get(`/api/chat/room/group/list`);
+    chatList.value = data;
+  } catch (err: unknown) {
+    console.error('채팅 목록을 불러오는 데 실패했습니다.', err);
+  }
 }
 </script>
