@@ -39,7 +39,7 @@ async function doLogin() {
 
     const res = await api.post<LoginResponse>(`/api/auth/login`, loginData);
 
-    auth.updateAuthState(res.data.token);
+    auth.updateAuthState(res.token);
     router.push('/');
   } catch (error: unknown) {
     // 에러 인터셉터에서 스낵바로 사용자에게 피드백을 줬으므로, 콘솔에만 기록

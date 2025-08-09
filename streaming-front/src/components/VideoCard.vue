@@ -17,12 +17,27 @@ interface Props {
 const props = defineProps<Props>();
 
 const formattedDate = computed(() => {
-  const d = new Date(props.video.uploadedAt);
-  const yy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  const hh = String(d.getHours()).padStart(2, '0');
-  const mi = String(d.getMinutes()).padStart(2, '0');
-  return `${yy}.${mm}.${dd} ${hh}:${mi}`;
+  const datetime = props.video.uploadedAt;
+
+  if (!Array.isArray(datetime) || datetime.length < 6) {
+    console.error('올바른 날짜 형식이 아닙니다:', datetime);
+    return '날짜 형식 오류';
+  }
+
+  const [year, month, day, hour, minute, second, nanoseconds] = datetime;
+  const date = new Date(year, month - 1, day, hour, minute, second, Math.floor(nanoseconds / 1000000));
+
+  if (isNaN(date.getTime())) {
+    return '유효하지 않은 날짜';
+  }
+
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  const hh = String(date.getHours()).padStart(2, '0');
+  const mi = String(date.getMinutes()).padStart(2, '0');
+  const ss = String(date.getSeconds()).padStart(2, '0');
+
+  return `${yyyy}.${mm}.${dd} ${hh}:${mi}:${ss}`;
 });
 </script>

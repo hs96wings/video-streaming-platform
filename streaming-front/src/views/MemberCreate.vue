@@ -22,15 +22,7 @@ import api from '@/api/axios';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
-
-interface SignupRequest {
-  userid: string;
-  password: string;
-}
-
-interface SignupResponse {
-  token: string;
-}
+import type { SignupRequest, SignupResponse } from '@/types/api';
 
 const userid = ref<string>('');
 const password = ref<string>('');
@@ -46,7 +38,7 @@ async function create(): Promise<void> {
     };
     const res = await api.post<SignupResponse>(`/api/auth/signup`, createData);
 
-    auth.updateAuthState(res.data.token);
+    auth.updateAuthState(res.token);
     router.push('/');
   } catch (error: unknown) {
     if (error instanceof Error) {

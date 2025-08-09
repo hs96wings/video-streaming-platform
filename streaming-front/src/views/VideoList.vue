@@ -15,13 +15,14 @@ import api from '@/api/axios';
 import VideoCard from '@/components/VideoCard.vue';
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import type { Video } from '@/types/api';
 
 const router = useRouter();
-const videoList = ref([]);
-const searchKeyword = ref('');
+const videoList = ref<Video[]>([]);
+const searchKeyword = ref<string>('');
 
 onMounted(async () => {
-  const { data } = await api.get(`/api/video/list`);
+  const data = await api.get(`/api/video/list`);
   videoList.value = data;
 });
 
@@ -32,13 +33,13 @@ function goToVideo(id: number) {
 async function searchVideos() {
   try {
     if (searchKeyword.value.trim() === '') {
-      const { data } = await api.get(`/api/video/list`);
+      const data = await api.get(`/api/video/list`);
       videoList.value = data;
     } else {
-      const { data } = await api.get(`/api/video/search?title=${searchKeyword.value}`);
+      const data = await api.get(`/api/video/search?title=${searchKeyword.value}`);
       videoList.value = data;
     }
-  } catch (err) {
+  } catch (err: unknown) {
     alert('검색 중 오류가 발생했습니다');
     console.error(err);
   }

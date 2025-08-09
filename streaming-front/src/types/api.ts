@@ -42,7 +42,14 @@ export interface Video {
   description: string;
   videoPath: string;
   thumbnailPath: string;
-  uploadedAt: string;
+  uploadedAt: string | Date;
   videoStatus: 'UPLOADED' | 'PROCESSING' | 'READY';
   viewCount: number;
+}
+
+export interface Comment {
+  id: number;
+  authorName: string;
+  content: string;
+  createdAt: string;
 }
