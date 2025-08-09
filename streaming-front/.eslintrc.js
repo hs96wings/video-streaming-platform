@@ -12,6 +12,7 @@ module.exports = {
     sourceType: 'module',
     project: './tsconfig.json',
     tsconfigRootDir: __dirname,
+    extraFileExtensions: ['vue'],
   },
   plugins: [
     'vue',
@@ -25,7 +26,13 @@ module.exports = {
     'plugin:prettier/recommended', // prettier 규칙 연동
   ],
   rules: {
-    'prettier/prettier': 'warn', // prettier 위반 시 경고
+    'prettier/prettier': [
+      'warn',
+      {
+        endOfLine: 'auto',
+      },
+    ],
+    '@typescript-eslint/no-explicit-any': 'off',
   },
   overrides: [
     {

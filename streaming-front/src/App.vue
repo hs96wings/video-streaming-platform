@@ -24,7 +24,7 @@ import { onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import HeaderComponent from './components/HeaderComponent.vue';
 import { useSnackbarStore } from '@/stores/snackbarStore';
-import axios from 'axios';
+import api from './api/axios';
 import { useRouter } from 'vue-router';
 
 const auth = useAuthStore();
@@ -36,12 +36,16 @@ onMounted(async () => {
 
   if (token) {
     try {
-      await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/auth/validate`);
+      await api.get(`/api/auth/validate`);
       auth.updateAuthState(token);
     } catch (error) {
-      auth.logout();
-      snackbarStore.showSnackbar('세션이 만료되었습니다. 다시 로그인 해주세요.', 'warning');
-      router.replace('/login');
+      if (error instanceof Error) {
+        snackbarStore.showSnackbar('세션이 만료되었습니다. 다시 로그인 해주세요.', 'warning');
+        auth.logout();
+        router.replace('/login');
+      } else {
+        snackbarStore.showSnackbar(`오류가 발생했습니다. ${error}`, 'error');
+      }
     }
   }
 });

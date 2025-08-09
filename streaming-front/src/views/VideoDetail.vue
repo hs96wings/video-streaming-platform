@@ -1,153 +1,138 @@
 <template>
-    <v-container>
-        <v-row justify="center">
-            <v-col cols="12" sm="4" md="6">
-                <v-card>
-                    <v-card-title class="text-h5 text-center">{{ title }}</v-card-title>
-                    <v-card-text>
-                        <video
-                            ref="hlsPlayer"
-                            controls
-                            width="540"
-                            height="960"
-                            crossorigin="anonymous"></video>
-                    </v-card-text>
-                    <v-btn
-                        @click="goToBack()"
-                        target="_self"
-                        rel="noopener">
-                        돌아가기
-                    </v-btn>
-                </v-card>
-                <v-card>
-                    <v-textarea v-model="newComment" label="댓글을 입력하세요"></v-textarea>
-                    <v-btn @click="postComment">등록</v-btn>
-                </v-card>
-                <v-card>
-                    <v-table>
-                        <thead>
-                            <tr>
-                                <th>작성자</th>
-                                <th>내용</th>
-                                <th>업로드 날짜</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="comment in comments" :key="comment.id">
-                                <td>
-                                    <span v-if="comment.authorName === username"> {{ comment.authorName }}</span>
-                                    <v-btn v-else @click="openPrivateChatModal(comment.authorName)">{{ comment.authorName }}</v-btn>
-                                </td>
-                                <td>{{ comment.content }}</td>
-                                <td>{{ formatDate(comment.createdAt) }}</td>
-                                <td><v-btn v-if="comment.authorName === username" @click="deleteComment(comment.id)">삭제</v-btn></td>
-                            </tr>
-                        </tbody>
-                    </v-table>
-                </v-card>
-            </v-col>
-        </v-row>
-        <v-dialog v-model="showCreatePrivateRoomModal" max-width="500px">
-            <v-card>
-                <v-card-title class="text-h6">
-                    1:1 채팅방 생성
-                </v-card-title>
-                <v-card-text>
-                    채팅방을 생성하시겠습니까?
-                </v-card-text>
-                <v-card-actions>
-                    <v-btn color="grey" @click="showCreatePrivateRoomModal = false">취소</v-btn>
-                    <v-btn color="primary" @click="createPrivateChatRoom">생성</v-btn>
-                </v-card-actions>
-            </v-card>
-        </v-dialog>
-    </v-container>
+  <v-container>
+    <v-row justify="center">
+      <v-col cols="12" sm="4" md="6">
+        <v-card>
+          <v-card-title class="text-h5 text-center">{{ title }}</v-card-title>
+          <v-card-text>
+            <video ref="hlsPlayer" controls width="540" height="960" crossorigin="anonymous"></video>
+          </v-card-text>
+          <v-btn @click="goToBack()" target="_self" rel="noopener"> 돌아가기 </v-btn>
+        </v-card>
+        <v-card>
+          <v-textarea v-model="newComment" label="댓글을 입력하세요"></v-textarea>
+          <v-btn @click="postComment">등록</v-btn>
+        </v-card>
+        <v-card>
+          <v-table>
+            <thead>
+              <tr>
+                <th>작성자</th>
+                <th>내용</th>
+                <th>업로드 날짜</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="comment in comments" :key="comment.id">
+                <td>
+                  <span v-if="comment.authorName === username"> {{ comment.authorName }}</span>
+                  <v-btn v-else @click="openPrivateChatModal(comment.authorName)">{{ comment.authorName }}</v-btn>
+                </td>
+                <td>{{ comment.content }}</td>
+                <td>{{ formatDate(comment.createdAt) }}</td>
+                <td><v-btn v-if="comment.authorName === username" @click="deleteComment(comment.id)">삭제</v-btn></td>
+              </tr>
+            </tbody>
+          </v-table>
+        </v-card>
+      </v-col>
+    </v-row>
+    <v-dialog v-model="showCreatePrivateRoomModal" max-width="500px">
+      <v-card>
+        <v-card-title class="text-h6"> 1:1 채팅방 생성 </v-card-title>
+        <v-card-text> 채팅방을 생성하시겠습니까? </v-card-text>
+        <v-card-actions>
+          <v-btn color="grey" @click="showCreatePrivateRoomModal = false">취소</v-btn>
+          <v-btn color="primary" @click="createPrivateChatRoom">생성</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </v-container>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
-import Hls from 'hls.js'
-import { useAuthStore } from '@/stores/auth'
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import api from '@/api/axios';
+import Hls from 'hls.js';
+import { useAuthStore } from '@/stores/auth';
 
-const auth = useAuthStore()
-const username = auth.username
+const auth = useAuthStore();
+const username = auth.username;
 
-const route = useRoute()
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 
-const id = route.params.id
-const title = ref('')
-const videoPath = ref('')
-const description = ref('')
-const comments = ref([])
-const newComment = ref('')
-const hlsPlayer = ref(null)
-const showCreatePrivateRoomModal = ref(false)
-const targetUserId = ref('')
+const id = route.params.id;
+const title = ref<string>('');
+const videoPath = ref<string>('');
+const description = ref<string>('');
+const comments = ref<string[]>([]);
+const newComment = ref<string>('');
+const hlsPlayer = ref(null);
+const showCreatePrivateRoomModal = ref<boolean>(false);
+const targetUserId = ref<string>('');
 
 function formatDate(datetime) {
-    return datetime.slice(0, 19).replace('T', ' ')
+  return datetime.slice(0, 19).replace('T', ' ');
 }
 
 async function fetchVideoAndComments() {
-    const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/video/${id}`)
-    const commentRes = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/comment/${id}`)
-    title.value = res.data.title
-    videoPath.value = res.data.videoPath
-    description.value = res.data.description
-    comments.value = commentRes.data
+  const res = await api.get(`/api/video/${id}`);
+  const commentRes = await api.get(`/api/comment/${id}`);
+  title.value = res.data.title;
+  videoPath.value = res.data.videoPath;
+  description.value = res.data.description;
+  comments.value = commentRes.data;
 }
 
 async function postComment() {
-    await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/comment`, {
-        videoId: id,
-        content: newComment.value
-    })
-    newComment.value = ''
-    fetchComments()
+  await api.post(`/api/comment`, {
+    videoId: id,
+    content: newComment.value,
+  });
+  newComment.value = '';
+  fetchComments();
 }
 
 async function deleteComment(commentId) {
-    await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/comment/${commentId}`)
-    fetchComments()
+  await api.delete(`/api/comment/${commentId}`);
+  fetchComments();
 }
 
 async function fetchComments() {
-    const { data } = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/comment/${id}`)
-    comments.value = data
+  const { data } = await api.get(`/api/comment/${id}`);
+  comments.value = data;
 }
 
 function goToBack() {
-    router.push('/list')
+  router.push('/list');
 }
 
 onMounted(async () => {
-    await fetchVideoAndComments()
+  await fetchVideoAndComments();
 
-    const video = hlsPlayer.value
-    if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = videoPath.value
-    } else if (Hls.isSupported()) {
-        const hls = new Hls()
-        hls.loadSource(videoPath.value)
-        hls.attachMedia(video)
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            video.play()
-        })
-    }
-})
+  const video = hlsPlayer.value;
+  if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = videoPath.value;
+  } else if (Hls.isSupported()) {
+    const hls = new Hls();
+    hls.loadSource(videoPath.value);
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      video.play();
+    });
+  }
+});
 
 function openPrivateChatModal(userId) {
-    targetUserId.value = userId
-    showCreatePrivateRoomModal.value = true
+  targetUserId.value = userId;
+  showCreatePrivateRoomModal.value = true;
 }
 
 async function createPrivateChatRoom() {
-    const { data } = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/chat/room/private/create?otherMemberUserId=${targetUserId.value}`)
-    router.push(`/chat/${data}`)
+  const { data } = await api.post(`/api/chat/room/private/create?otherMemberUserId=${targetUserId.value}`);
+  router.push(`/chat/${data}`);
 }
-
 </script>

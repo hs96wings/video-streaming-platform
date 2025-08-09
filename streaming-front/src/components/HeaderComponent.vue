@@ -59,7 +59,8 @@ import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
 import { useNotificationStore } from '@/stores/notificationStore';
-import axios, { AxiosError } from 'axios';
+import api from '@/api/axios';
+import { AxiosError } from 'axios';
 
 // 반응형 네비게이션 드로어 상태
 const drawer = ref(false);
@@ -86,7 +87,7 @@ async function doLogout() {
 
     if (typeof roomId === 'number') {
       try {
-        await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/chat/room/${roomId}/read`);
+        await api.post(`${import.meta.env.VITE_API_BASE_URL}/api/chat/room/${roomId}/read`);
       } catch (err: unknown) {
         if (err instanceof AxiosError) {
           console.warn('읽음 처리 API 실패 (AxiosError):', err.response?.data);
