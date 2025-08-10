@@ -87,6 +87,7 @@ import { storeToRefs } from 'pinia';
 import type { Video, Comment } from '@/types/api';
 import { formatDate } from '@/utils/date';
 import { useSnackbarStore } from '@/stores/snackbarStore';
+import { hlsDefaultConfig } from '@/config/hlsConfig';
 
 const route = useRoute();
 const router = useRouter();
@@ -161,41 +162,7 @@ function goToBack(): void {
 
 function attachHls(video: HTMLVideoElement, src: string): void {
   if (Hls.isSupported()) {
-    const hls = new Hls({
-      loader: Hls.DefaultConfig.loader,
-      manifestLoadPolicy: {
-        default: {
-          maxTimeToFirstByteMs: Infinity,
-          maxLoadTimeMs: 20000,
-          timeoutRetry: {
-            maxNumRetry: 2,
-            retryDelayMs: 0,
-            maxRetryDelayMs: 0,
-          },
-          errorRetry: {
-            maxNumRetry: 1,
-            retryDelayMs: 1000,
-            maxRetryDelayMs: 8000,
-          },
-        },
-      },
-      fragLoadPolicy: {
-        default: {
-          maxTimeToFirstByteMs: 10000,
-          maxLoadTimeMs: 120000,
-          timeoutRetry: {
-            maxNumRetry: 4,
-            retryDelayMs: 0,
-            maxRetryDelayMs: 0,
-          },
-          errorRetry: {
-            maxNumRetry: 6,
-            retryDelayMs: 1000,
-            maxRetryDelayMs: 8000,
-          },
-        },
-      },
-    });
+    const hls = new Hls(hlsDefaultConfig);
     hls.loadSource(src);
     hls.attachMedia(video);
 
