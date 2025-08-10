@@ -10,6 +10,24 @@
           <v-card-title class="text-h5 text-center">{{ videoData.title }}</v-card-title>
           <v-card-text>
             <video ref="hlsPlayer" controls width="540" height="960" crossorigin="anonymous"></video>
+            <div
+              v-if="isBuffering"
+              style="
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.4);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+              "
+            >
+              <v-progress-circular indeterminate color="primary" :size="70"></v-progress-circular>
+              <p class="mt-4 white--text">버퍼링 중...</p>
+            </div>
           </v-card-text>
           <v-btn @click="goToBack()" target="_self" rel="noopener"> 돌아가기 </v-btn>
         </v-card>
@@ -63,11 +81,12 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '@/api/axios';
-import Hls from 'hls.js';
+import Hls, { Events, type ErrorData } from 'hls.js';
 import { useAuthStore } from '@/stores/auth';
 import { storeToRefs } from 'pinia';
 import type { Video, Comment } from '@/types/api';
 import { formatDate } from '@/utils/date';
+import { useSnackbarStore } from '@/stores/snackbarStore';
 
 const route = useRoute();
 const router = useRouter();
@@ -82,9 +101,12 @@ const comments = ref<Comment[]>([]);
 const newComment = ref<string>('');
 const hlsPlayer = ref<HTMLVideoElement | null>(null);
 const isLoading = ref<boolean>(true);
+const isBuffering = ref<boolean>(false);
 
 const showCreatePrivateRoomModal = ref<boolean>(false);
 const targetUserId = ref<string>('');
+
+const snackBar = useSnackbarStore();
 
 async function fetchVideoAndComments(): Promise<void> {
   if (!id) return;
@@ -137,23 +159,90 @@ function goToBack(): void {
   router.push('/list');
 }
 
+function attachHls(video: HTMLVideoElement, src: string): void {
+  if (Hls.isSupported()) {
+    const hls = new Hls({
+      loader: Hls.DefaultConfig.loader,
+      manifestLoadPolicy: {
+        default: {
+          maxTimeToFirstByteMs: Infinity,
+          maxLoadTimeMs: 20000,
+          timeoutRetry: {
+            maxNumRetry: 2,
+            retryDelayMs: 0,
+            maxRetryDelayMs: 0,
+          },
+          errorRetry: {
+            maxNumRetry: 1,
+            retryDelayMs: 1000,
+            maxRetryDelayMs: 8000,
+          },
+        },
+      },
+      fragLoadPolicy: {
+        default: {
+          maxTimeToFirstByteMs: 10000,
+          maxLoadTimeMs: 120000,
+          timeoutRetry: {
+            maxNumRetry: 4,
+            retryDelayMs: 0,
+            maxRetryDelayMs: 0,
+          },
+          errorRetry: {
+            maxNumRetry: 6,
+            retryDelayMs: 1000,
+            maxRetryDelayMs: 8000,
+          },
+        },
+      },
+    });
+    hls.loadSource(src);
+    hls.attachMedia(video);
+
+    hls.on(Hls.Events.MANIFEST_PARSED, (): void => {
+      isBuffering.value = false;
+    });
+    hls.on(Hls.Events.BUFFER_CREATED, (): void => {
+      isBuffering.value = true;
+    });
+    hls.on(Hls.Events.BUFFER_APPENDED, (): void => {
+      isBuffering.value = false;
+    });
+    hls.on(Hls.Events.ERROR, (_event: Events.ERROR, data: ErrorData): void => {
+      console.error('Hls.js error:', data);
+
+      if (data.fatal) {
+        switch (data.type) {
+          case Hls.ErrorTypes.NETWORK_ERROR:
+            console.error('최종 네트워크 에러, 플레이어 중단');
+            snackBar.showSnackbar('네트워크 에러가 발생했습니다', 'error');
+            hls.destroy();
+            break;
+          case Hls.ErrorTypes.MEDIA_ERROR:
+            console.log('미디어 에러, 복구 시도');
+            snackBar.showSnackbar('영상 에러로 복구를 시도합니다', 'warning');
+            hls.recoverMediaError();
+            break;
+          default:
+            console.error('치명적 에러, 플레이어 중단');
+            snackBar.showSnackbar('플레이어에 문제가 생겨 중단합니다', 'error');
+            hls.destroy();
+            break;
+        }
+      }
+    });
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = src;
+  }
+}
+
 onMounted(async (): Promise<void> => {
   await fetchVideoAndComments();
 
   const video = hlsPlayer.value;
   if (!video || !videoData.value) return;
 
-  const videoSrc = videoData.value.videoPath;
-  if (Hls.isSupported()) {
-    const hls = new Hls();
-    hls.loadSource(videoSrc);
-    hls.attachMedia(video);
-    hls.on(Hls.Events.MANIFEST_PARSED, () => {
-      // video.play();
-    });
-  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    video.src = videoSrc;
-  }
+  attachHls(video, videoData.value.videoPath);
 });
 
 function openPrivateChatModal(userId: string): void {
