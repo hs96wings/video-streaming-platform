@@ -1,7 +1,16 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.4.5'
 	id 'io.spring.dependency-management' version '1.1.7'
+
+	// Kotlin 플러그인 추가
+	id 'org.jetbrains.kotlin.jvm' version '1.9.25'
+	// Spring 클래스를 Kotlin에서 사용하기 위한 플러그인 추가
+	id 'org.jetbrains.kotlin.plugin.spring' version '1.9.25'
+	// JPA 엔티티를 위한 플러그인
+	id 'org.jetbrains.kotlin.plugin.jpa' version '1.9.25'
 }
 
 group = 'io.github.hs96wings'
@@ -45,6 +54,17 @@ dependencies {
 
 	// websocket 추가
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+	// Kotlin 표준 라이브러리(stdlib) 의존성 추가
+	implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+	// Kotlin 리플렉션 라이브러리 추가
+	implementation 'org.jetbrains.kotlin:kotlin-reflect'
+}
+
+compileKotlin {
+	compilerOptions {
+		jvmTarget.set(JvmTarget.JVM_17)
+	}
 }
 
 tasks.named('test') {
