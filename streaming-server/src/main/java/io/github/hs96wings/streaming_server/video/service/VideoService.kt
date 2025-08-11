@@ -5,8 +5,6 @@ import io.github.hs96wings.streaming_server.video.domain.Video
 import io.github.hs96wings.streaming_server.video.domain.VideoStatus
 import io.github.hs96wings.streaming_server.video.dto.*
 import io.github.hs96wings.streaming_server.video.repository.VideoRepository
-import jakarta.persistence.EntityNotFoundException
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.StringRedisTemplate
@@ -19,8 +17,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
-import java.util.Map
-import java.util.stream.Collectors
 
 @Service
 @Transactional(readOnly = true)
@@ -76,15 +72,13 @@ class VideoService(
     fun getVideos(): List<VideoResDto> = searchByTitle("")
 
     fun findById(id: Long): VideoResDto {
-        val video = videoRepository.findById(id)
-            .orElse(null) ?: throw IllegalArgumentException("해당 영상이 존재하지 않습니다. id=$id")
+        val video = findVideoById(id)
         return VideoResDto.from(video)
     }
 
     @Transactional
     fun modify(id: Long, videoModifyReqDto: VideoModifyReqDto): Video {
-        val modifyVideo = videoRepository.findById(id)
-            .orElse(null) ?: throw IllegalArgumentException("해당 영상이 존재하지 않습니다. id=$id")
+        val modifyVideo = findVideoById(id)
 
         return modifyVideo.apply {
             title = videoModifyReqDto.title
@@ -102,8 +96,7 @@ class VideoService(
 
     @Transactional
     fun updateStatus(id: Long, status: VideoStatus, videoHlsReqDto: VideoHlsReqDto) {
-        val video = videoRepository.findById(id)
-            .orElse(null) ?: throw IllegalArgumentException("해당 영상이 존재하지 않습니다. id=$id")
+        val video = findVideoById(id)
 
         video.videoStatus = status
 
@@ -125,8 +118,7 @@ class VideoService(
 
     @Transactional
     fun increaseViewCount(videoId: Long) {
-        val video = videoRepository.findById(videoId)
-            .orElse(null) ?: throw IllegalArgumentException("해당 영상이 존재하지 않습니다. id=$videoId")
+        val video = findVideoById(videoId)
 
         video.viewCount++
     }
@@ -137,5 +129,10 @@ class VideoService(
 
     fun getLatestVideos(): List<VideoResDto> {
         return videoRepository.findTop3ByOrderByUploadedAtDesc().map(VideoResDto::from)
+    }
+
+    private fun findVideoById(videoId: Long): Video {
+        return videoRepository.findById(videoId)
+            .orElse(null) ?: throw IllegalArgumentException("해당 영상이 존재하지 않습니다. id=$videoId")
     }
 }

@@ -8,5 +8,5 @@ import java.util.*
 @Repository
 interface ChatRoomRepository : JpaRepository<ChatRoom, Long> {
     fun findByIsGroupChat(isGroupChat: Boolean): List<ChatRoom>
-    fun findByRoomKey(roomKey: String): Optional<ChatRoom>
+    fun findByRoomKey(roomKey: String): ChatRoom?
 }

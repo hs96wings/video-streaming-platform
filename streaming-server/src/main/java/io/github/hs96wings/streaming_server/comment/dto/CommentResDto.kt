@@ -12,10 +12,15 @@ data class CommentResDto(
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     val createdAt: LocalDateTime?
 ) {
-    constructor(comment: Comment): this (
-        id = comment.id ?: throw IllegalStateException("Comment ID cannot be null for DTO conversion"),
-        authorName = comment.author.userid,
-        content = comment.content,
-        createdAt = comment.createdAt
-    )
+    companion object {
+        @JvmStatic
+        fun from(comment: Comment): CommentResDto {
+            return CommentResDto(
+                id = comment.id ?: throw IllegalStateException("Comment ID cannot be null for DTO conversion"),
+                authorName = comment.author.userid,
+                content = comment.content,
+                createdAt = comment.createdAt
+            )
+        }
+    }
 }
