@@ -26,10 +26,10 @@ public class AuthService {
             throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
         }
 
-        Member newMember = Member.builder()
-                .userid(signupRequestDto.getUserid())
-                .password(passwordEncoder.encode(signupRequestDto.getPassword()))
-                .build();
+        Member newMember = new Member(
+                signupRequestDto.getUserid(),
+                passwordEncoder.encode(signupRequestDto.getPassword())
+        );
         return memberRepository.save(newMember);
     }
 

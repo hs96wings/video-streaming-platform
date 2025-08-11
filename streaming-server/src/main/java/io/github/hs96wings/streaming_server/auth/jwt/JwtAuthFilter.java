@@ -54,11 +54,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
                 // DB 조회 없이, JWT 정보로 Member 객체(Principal) 생성
                 // UserDetails를 구현했으므로 Member가 Principal이 될 수 있음
-                Member member = Member.builder()
-                        .id(id)
-                        .userid(username)
-                        .role(role)
-                        .build();
+                Member member = new Member(id, username, role);
                 // Authentication 객체 생성 (Principal 자리에 Member 객체를 직접 넣음)
                 // member.getAuthorities()는 Member 클래스에 이미 구현된 메서드를 활용
                 Authentication auth = new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities());

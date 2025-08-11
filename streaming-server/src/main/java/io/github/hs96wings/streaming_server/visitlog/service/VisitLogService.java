@@ -17,13 +17,13 @@ public class VisitLogService {
     }
 
     public void saveVisitLog(String ip, String ua, String path, String referer) {
-        VisitLog log = VisitLog.builder()
-                .ipAddress(ip)
-                .userAgent(ua)
-                .accessedAt(LocalDateTime.now())
-                .path(path)
-                .referer(referer)
-                .build();
+        VisitLog log = new VisitLog(
+                ip,
+                ua,
+                LocalDateTime.now(),
+                path,
+                referer
+        );
         visitLogRepository.save(log);
     }
 }

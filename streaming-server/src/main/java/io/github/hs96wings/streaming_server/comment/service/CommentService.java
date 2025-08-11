@@ -33,11 +33,11 @@ public class CommentService {
         Member member = memberRepository.findByUserid(username)
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 유저입니다"));
 
-        Comment comment = Comment.builder()
-                .video(video)
-                .author(member)
-                .content(commentSaveReqDto.getContent())
-                .build();
+        Comment comment = new Comment(
+                commentSaveReqDto.getContent(),
+                video,
+                member
+        );
 
         commentRepository.save(comment);
 

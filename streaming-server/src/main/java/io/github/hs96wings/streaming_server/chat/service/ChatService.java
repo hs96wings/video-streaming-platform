@@ -59,11 +59,11 @@ public class ChatService {
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다"));
 
         // 메시지 저장
-        ChatMessage chatMessage = ChatMessage.builder()
-                .chatRoom(chatRoom)
-                .member(sender)
-                .message(chatMessageDto.getMessage())
-                .build();
+        ChatMessage chatMessage = new ChatMessage(
+                chatRoom,
+                sender,
+                chatMessageDto.getMessage()
+        );
         chatMessageRepository.save(chatMessage);
 
         // 사용자 별로 읽음 여부 저장
@@ -72,12 +72,12 @@ public class ChatService {
         for (ChatParticipant c : chatParticipants) {
             boolean isSender = c.getMember().equals(sender);
 
-            ReadStatus readStatus = ReadStatus.builder()
-                    .chatRoom(chatRoom)
-                    .chatParticipant(c)
-                    .chatMessage(chatMessage)
-                    .isRead(isSender)
-                    .build();
+            ReadStatus readStatus = new ReadStatus(
+                    isSender,
+                    chatRoom,
+                    c,
+                    chatMessage
+            );
             readStatusRepository.save(readStatus);
 
             if (!isSender) {
@@ -90,22 +90,23 @@ public class ChatService {
 
     public void createGroupRoom(Member member, String roomName) {
         // 채팅방 생성
-        ChatRoom chatRoom = ChatRoom.builder()
-                .name(roomName)
-                .isGroupChat("Y")
-                .build();
+        ChatRoom chatRoom = new ChatRoom(
+                roomName,
+                null,
+                true
+        );
         chatRoomRepository.save(chatRoom);
 
         // 채팅 참여자로 채팅 개설자 추가
-        ChatParticipant chatParticipant = ChatParticipant.builder()
-                .chatRoom(chatRoom)
-                .member(member)
-                .build();
+        ChatParticipant chatParticipant = new ChatParticipant(
+                chatRoom,
+                member
+        );
         chatParticipantRepository.save(chatParticipant);
     }
 
     public List<ChatRoomListResDto> getGroupChatList() {
-        return chatRoomRepository.findByIsGroupChat("Y").stream()
+        return chatRoomRepository.findByIsGroupChat(true).stream()
                 .map(ChatRoomListResDto::from)
                 .collect(Collectors.toList());
     }
@@ -115,7 +116,7 @@ public class ChatService {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 채팅방입니다"));
 
-        if (chatRoom.getIsGroupChat().equals("N"))
+        if (!chatRoom.isGroupChat())
             throw new IllegalArgumentException("그룹 채팅이 아닙니다");
 
         // 이미 참여한 유저인지 검증
@@ -127,10 +128,10 @@ public class ChatService {
 
     // ChatParticipant 객체 생성 후 저장
     public void addParticipantToRoom(ChatRoom chatRoom, Member member) {
-        ChatParticipant chatParticipant = ChatParticipant.builder()
-                .chatRoom(chatRoom)
-                .member(member)
-                .build();
+        ChatParticipant chatParticipant = new ChatParticipant(
+                chatRoom,
+                member
+        );
         chatParticipantRepository.save(chatParticipant);
     }
 
@@ -190,12 +191,12 @@ public class ChatService {
 
         for (ChatParticipant c : chatParticipants) {
             Long count = readStatusRepository.countByChatParticipantAndIsReadFalse(c);
-            MyChatListResDto dto = MyChatListResDto.builder()
-                    .roomId(c.getChatRoom().getId())
-                    .roomName(c.getChatRoom().getName())
-                    .isGroupChat(c.getChatRoom().getIsGroupChat())
-                    .unReadCount(count)
-                    .build();
+            MyChatListResDto dto = new MyChatListResDto(
+                    c.getChatRoom().getId(),
+                    c.getChatRoom().getName(),
+                    c.getChatRoom().isGroupChat(),
+                    count
+            );
             chatListResDtos.add(dto);
         }
         return chatListResDtos;
@@ -205,7 +206,7 @@ public class ChatService {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 채팅방입니다"));
 
-        if(chatRoom.getIsGroupChat().equals("N")) {
+        if(chatRoom.isGroupChat()) {
             throw new IllegalArgumentException("단체 채팅방이 아닙니다");
         }
 
@@ -232,11 +233,11 @@ public class ChatService {
                 .map(ChatRoom::getId)
                 .orElseGet(() -> {
                     try {
-                        ChatRoom newRoom = ChatRoom.builder()
-                                .isGroupChat("N")
-                                .name(member.getUserid() + "-" + otherMember.getUserid())
-                                .roomKey(roomKey)
-                                .build();
+                        ChatRoom newRoom = new ChatRoom(
+                                member.getUserid() + "-" + otherMember.getUserid(),
+                                roomKey,
+                                true
+                        );
                         chatRoomRepository.save(newRoom);
                         addParticipantToRoom(newRoom, member);
                         addParticipantToRoom(newRoom, otherMember);
