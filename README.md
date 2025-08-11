@@ -26,7 +26,7 @@ FFmpeg를 활용한 HLS 영상 변환, WebSocket 기반 채팅, SSE 기반 알�
 
 ### Backend
 
-- Java 17, Spring Boot 3, Spring Security, JPA, MySQL, Redis, WebSocket, SSE
+- Java 17, Kotlin, Spring Boot 3, Spring Security, JPA, MySQL, Redis, WebSocket, SSE
 
 ### Frontend
 
