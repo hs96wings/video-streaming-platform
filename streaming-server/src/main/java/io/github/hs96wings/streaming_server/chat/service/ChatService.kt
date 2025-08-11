@@ -15,14 +15,13 @@ import io.github.hs96wings.streaming_server.common.sse.service.SseEmitterService
 import io.github.hs96wings.streaming_server.member.domain.Member
 import io.github.hs96wings.streaming_server.member.repository.MemberRepository
 import jakarta.persistence.EntityNotFoundException
-import lombok.extern.slf4j.Slf4j
+import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 @Transactional(readOnly = true)
-@Slf4j
 class ChatService(
     private val chatRoomRepository: ChatRoomRepository,
     private val chatParticipantRepository: ChatParticipantRepository,
@@ -31,6 +30,11 @@ class ChatService(
     private val memberRepository: MemberRepository,
     private val sseEmitterService: SseEmitterService
 ) {
+    companion object {
+        private val log = LoggerFactory.getLogger(ChatService::class.java)
+    }
+
+    @Transactional
     fun saveMessage(roomId: Long, chatMessageDto: ChatMessageDto) {
         // 채팅방 조회
         val chatRoom = findByChatRoomId(roomId)
@@ -47,22 +51,20 @@ class ChatService(
         // 사용자 별로 읽음 여부 저장
         val chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom)
 
-        for (c in chatParticipants) {
-            val isSender = c.member == sender
-
-            val readStatus = ReadStatus(
-                isSender,
-                chatRoom,
-                c,
-                chatMessage
+        val readStatuses = chatParticipants.map { c ->
+            ReadStatus(
+                isRead = (c.member == sender),
+                chatRoom = chatRoom,
+                chatParticipant = c,
+                chatMessage = chatMessage
             )
-            readStatusRepository.save(readStatus)
+        }
 
-            if (!isSender) {
-                val unreadCount = readStatusRepository.countByChatParticipantAndIsReadFalse(c)
-                val targetRoomId = chatRoom.id
-                sseEmitterService.send(c.member.id, targetRoomId, unreadCount)
-            }
+        readStatusRepository.saveAll(readStatuses)
+
+        readStatuses.filter { !it.isRead }.forEach { status ->
+            val unreadCount = readStatusRepository.countByChatParticipantAndIsReadFalse(status.chatParticipant)
+            sseEmitterService.send(status.chatParticipant.member.id, chatRoom.id, unreadCount)
         }
     }
 
@@ -110,17 +112,11 @@ class ChatService(
 
     fun getChatHistory(member: Member, roomId: Long): List<ChatMessageDto> {
         val chatRoom = findByChatRoomId(roomId)
-        val chatParticipants: List<ChatParticipant> = chatRoom.chatParticipants
-        var check = false
-
-        for (c in chatParticipants) {
-            if (c.member.id == member.id) {
-                check = true
-                break
-            }
+        val isParticipant = chatRoom.chatParticipants.any {
+            it.member.id == member.id
         }
 
-        if (!check) {
+        if (!isParticipant) {
             throw IllegalArgumentException("본인이 속하지 않은 채팅방입니다")
         }
 
@@ -131,12 +127,8 @@ class ChatService(
     fun isRoomParticipant(userid: String, roomId: Long): Boolean {
         val chatRoom = findByChatRoomId(roomId)
         val member = findByUserId(userid)
-        val chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom)
 
-        for (c in chatParticipants) {
-            if (c.member == member) return true
-        }
-        return false
+        return chatRoom.chatParticipants.any { it.member == member }
     }
 
     fun messageRead(member: Member, roomId: Long) {
@@ -151,20 +143,7 @@ class ChatService(
     }
 
     fun getMyChatRooms(member: Member): List<MyChatListResDto> {
-        val chatParticipants = chatParticipantRepository.findAllByMember(member)
-        val chatListResDtos: MutableList<MyChatListResDto> = ArrayList()
-
-        for (c in chatParticipants) {
-            val count = readStatusRepository.countByChatParticipantAndIsReadFalse(c)
-            val dto = MyChatListResDto(
-                c.chatRoom.id!!,
-                c.chatRoom.name,
-                c.chatRoom.isGroupChat,
-                count
-            )
-            chatListResDtos.add(dto)
-        }
-        return chatListResDtos
+        return chatRoomRepository.findMyChatList(member)
     }
 
     fun leaveGroupChat(member: Member, roomId: Long) {
@@ -208,7 +187,7 @@ class ChatService(
 
                 savedRoom.id ?: throw IllegalStateException("저장된 채팅방의 ID가 없습니다")
             } catch (e: DataIntegrityViolationException) {
-                
+                log.warn("Race condition detected for chat room key: $roomKey. Re-fetching...")
                 chatRoomRepository.findByRoomKey(roomKey)?.id
                     ?: throw RuntimeException("동시성 문제로 채팅방 조회에 실패했습니다")
             }
