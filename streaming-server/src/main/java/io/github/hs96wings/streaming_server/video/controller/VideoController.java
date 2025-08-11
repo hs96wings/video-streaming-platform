@@ -49,7 +49,7 @@ public class VideoController {
     public ResponseEntity<?> modifyVideo(@PathVariable("id") Long id, @RequestBody VideoModifyReqDto videoModifyReqDto) {
         Video modifyVideo = videoService.modify(id, videoModifyReqDto);
 
-        return ResponseEntity.ok(new VideoResDto(modifyVideo));
+        return new ResponseEntity<>(modifyVideo, HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

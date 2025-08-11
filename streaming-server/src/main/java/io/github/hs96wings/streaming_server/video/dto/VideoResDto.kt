@@ -14,13 +14,18 @@ data class VideoResDto (
     val uploadedAt: LocalDateTime,
     val viewCount: Long? = null
 ) {
-    constructor(video: Video): this (
-        id = video.id ?: throw IllegalStateException("Video ID cannot be null for DTO conversion"),
-        title = video.title,
-        description = video.description,
-        videoPath = video.videoPath,
-        thumbnailPath = video.thumbnailPath,
-        uploadedAt = video.uploadedAt,
-        viewCount = video.viewCount
-    )
+    companion object {
+        @JvmStatic
+        fun from(video: Video): VideoResDto {
+            return VideoResDto(
+                id = video.id ?: throw IllegalStateException("Video ID cannot be null for DTO conversion"),
+                title = video.title,
+                description = video.description,
+                videoPath = video.videoPath,
+                thumbnailPath = video.thumbnailPath,
+                uploadedAt = video.uploadedAt,
+                viewCount = video.viewCount
+            )
+        }
+    }
 }
