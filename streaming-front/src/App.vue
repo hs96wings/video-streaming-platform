@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <HeaderComponent />
+    <HeaderComponent v-if="!route.meta.hideHeader" />
     <v-main>
       <router-view />
     </v-main>
@@ -25,10 +25,11 @@ import { useAuthStore } from '@/stores/auth';
 import HeaderComponent from './components/HeaderComponent.vue';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import api from './api/axios';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const auth = useAuthStore();
 const snackbarStore = useSnackbarStore();
+const route = useRoute();
 const router = useRouter();
 
 onMounted(async () => {

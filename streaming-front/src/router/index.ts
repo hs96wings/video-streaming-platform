@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router';
 import MemberCreate from '@/views/MemberCreate.vue';
 import MemberLogin from '@/views/MemberLogin.vue';
 import HomePage from '@/views/HomePage.vue';
@@ -12,12 +12,14 @@ import AdminStats from '@/views/AdminStats.vue';
 import ChatPage from '@/views/ChatPage.vue';
 import GroupChatList from '@/views/GroupChatList.vue';
 import MyChatPage from '@/views/MyChatPage.vue';
+import MainPage from '@/views/MainPage.vue';
 
 import { useAuthStore } from '@/stores/auth';
 import { jwtDecode } from 'jwt-decode';
 
 const routes = [
-  { path: '/', name: 'HomePage', component: HomePage },
+  { path: '/', name: 'MainPage', component: MainPage, meta: { hideHeader: true } },
+  { path: '/home', name: 'HomePage', component: HomePage },
   { path: '/create', name: 'MemberCreate', component: MemberCreate },
   { path: '/login', name: 'MemberLogin', component: MemberLogin },
   { path: '/upload', name: 'VideoUpload', component: VideoUpload, meta: { requireAuth: true, requireAdmin: true } },
@@ -50,10 +52,11 @@ const routes = [
   { path: '/chat/:roomId', name: 'ChatPage', component: ChatPage },
   { path: '/groupchat/list', name: 'GroupChatList', component: GroupChatList, meta: { requireAuth: true } },
   { path: '/my/chat/page', name: 'MyChatPage', component: MyChatPage, meta: { requireAuth: true } },
+  { path: '/:pathMatch(.*)*', redirect: '/' },
 ];
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory(),
   routes,
 });
 
